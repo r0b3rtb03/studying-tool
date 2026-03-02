@@ -1,0 +1,2442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Choice Study Tool</title>
+    <style>
+        /* ============================================
+           CSS VARIABLES - LIGHT THEME
+           ============================================ */
+        :root {
+            --bg-primary: #f5f5f0;
+            --bg-secondary: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #d0d0d0;
+            --header-bg-start: #5a7a4a;
+            --header-bg-end: #4a6a3a;
+            --panel-shadow: rgba(0,0,0,0.08);
+            --input-bg: #ffffff;
+            --hover-bg: #f0f0eb;
+            --correct-bg: #e8f5e9;
+            --correct-border: #28a745;
+            --incorrect-bg: #fce4ec;
+            --incorrect-border: #dc3545;
+            --info-bg: #fff9e6;
+            --info-border: #e6d99f;
+        }
+
+        /* ============================================
+           CSS VARIABLES - DARK THEME
+           ============================================ */
+        body.dark-mode {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #444;
+            --header-bg-start: #3a5a2a;
+            --header-bg-end: #2a4a1a;
+            --panel-shadow: rgba(0,0,0,0.3);
+            --input-bg: #3a3a3a;
+            --hover-bg: #353535;
+            --correct-bg: #1a3a1a;
+            --correct-border: #28a745;
+            --incorrect-bg: #3a1a1a;
+            --incorrect-border: #dc3545;
+            --info-bg: #3d3d1a;
+            --info-border: #5a5a1a;
+        }
+
+        /* ============================================
+           GLOBAL RESET & BASE
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .header {
+            background: linear-gradient(135deg, var(--header-bg-start), var(--header-bg-end));
+            color: white;
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+        /* ============================================
+           TAB NAVIGATION
+           ============================================ */
+        .tab-navigation {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border-color);
+            box-shadow: 0 1px 4px var(--panel-shadow);
+        }
+
+        .tab-buttons {
+            display: flex;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.9rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--hover-bg);
+        }
+
+        .tab-btn.active {
+            color: var(--header-bg-start);
+            border-bottom-color: var(--header-bg-start);
+        }
+
+        .tab-content {
+            display: none;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ============================================
+           PANELS & CARDS
+           ============================================ */
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px var(--panel-shadow);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* ============================================
+           BUTTONS
+           ============================================ */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--header-bg-start), var(--header-bg-end));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--header-bg-start);
+            color: var(--header-bg-start);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        /* ============================================
+           FORM ELEMENTS
+           ============================================ */
+        textarea, input[type="text"], select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--header-bg-start);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        /* ============================================
+           IMPORT TAB SPECIFICS
+           ============================================ */
+        .import-methods {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .method-btn {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .method-btn.active {
+            color: var(--header-bg-start);
+            border-bottom-color: var(--header-bg-start);
+        }
+
+        .method-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .import-method {
+            display: none;
+        }
+
+        .import-method.active {
+            display: block;
+        }
+
+        /* PDF drop zone */
+        .drop-zone {
+            border: 3px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--header-bg-start);
+            background: var(--hover-bg);
+        }
+
+        .drop-zone-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .drop-zone-text {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .drop-zone-hint {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Google Docs search */
+        .gdocs-search {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .gdocs-search input {
+            flex: 1;
+        }
+
+        .doc-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .doc-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-item:last-child {
+            border-bottom: none;
+        }
+
+        .doc-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .doc-item-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .doc-item-date {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Preview area */
+        .preview-area {
+            margin-top: 1rem;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .preview-count {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--header-bg-start);
+        }
+
+        .preview-question {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .preview-question-num {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .preview-question-text {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-option {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            padding: 0.15rem 0 0.15rem 1rem;
+        }
+
+        /* ============================================
+           QUESTION SET MANAGEMENT
+           ============================================ */
+        .set-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .set-chip {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: var(--bg-secondary);
+            transition: all 0.2s;
+        }
+
+        .set-chip.active {
+            border-color: var(--header-bg-start);
+            background: var(--header-bg-start);
+            color: white;
+        }
+
+        .set-chip:hover:not(.active) {
+            border-color: var(--header-bg-start);
+        }
+
+        .set-chip .delete-set {
+            margin-left: 0.5rem;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .set-chip .delete-set:hover {
+            opacity: 1;
+        }
+
+        /* ============================================
+           STUDY TAB
+           ============================================ */
+        .study-modes {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .mode-btn {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            color: var(--header-bg-start);
+            border-bottom-color: var(--header-bg-start);
+        }
+
+        .mode-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* Question card */
+        .question-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px var(--panel-shadow);
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .question-card.correct {
+            border-color: var(--correct-border);
+            background: var(--correct-bg);
+        }
+
+        .question-card.incorrect {
+            border-color: var(--incorrect-border);
+            background: var(--incorrect-bg);
+        }
+
+        .question-number {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        /* MC options */
+        .mc-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .mc-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-secondary);
+        }
+
+        .mc-option:hover:not(.disabled) {
+            border-color: var(--header-bg-start);
+            background: var(--hover-bg);
+        }
+
+        .mc-option.selected {
+            border-color: var(--header-bg-start);
+            background: var(--hover-bg);
+            font-weight: 600;
+        }
+
+        .mc-option.correct-answer {
+            border-color: var(--correct-border);
+            background: var(--correct-bg);
+        }
+
+        .mc-option.wrong-answer {
+            border-color: var(--incorrect-border);
+            background: var(--incorrect-bg);
+        }
+
+        .mc-option.disabled {
+            cursor: default;
+            opacity: 0.85;
+        }
+
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            background: var(--hover-bg);
+            border: 2px solid var(--border-color);
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .mc-option.selected .option-letter {
+            background: var(--header-bg-start);
+            color: white;
+            border-color: var(--header-bg-start);
+        }
+
+        .mc-option.correct-answer .option-letter {
+            background: var(--correct-border);
+            color: white;
+            border-color: var(--correct-border);
+        }
+
+        .mc-option.wrong-answer .option-letter {
+            background: var(--incorrect-border);
+            color: white;
+            border-color: var(--incorrect-border);
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        /* Session progress bar */
+        .session-progress {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .session-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            background: linear-gradient(to right, var(--header-bg-start), var(--header-bg-end));
+        }
+
+        /* Study navigation */
+        .study-nav {
+            display: none;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Feedback */
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .feedback.correct {
+            background: var(--correct-bg);
+            color: var(--correct-border);
+            border: 1px solid var(--correct-border);
+        }
+
+        .feedback.incorrect {
+            background: var(--incorrect-bg);
+            color: var(--incorrect-border);
+            border: 1px solid var(--incorrect-border);
+        }
+
+        .feedback .explanation {
+            font-weight: 400;
+            font-size: 0.85rem;
+            margin-top: 0.4rem;
+            color: var(--text-secondary);
+        }
+
+        /* Star button */
+        .star-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            opacity: 0.35;
+            transition: opacity 0.2s, transform 0.2s;
+            color: var(--text-primary);
+        }
+
+        .star-btn.starred {
+            opacity: 1;
+            color: #f9a825;
+        }
+
+        .star-btn:hover {
+            transform: scale(1.15);
+            opacity: 0.7;
+        }
+
+        /* ============================================
+           MASTERY BADGES
+           ============================================ */
+        .mastery-badge {
+            display: inline-block;
+            padding: 0.15rem 0.55rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mastery-new {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        body.dark-mode .mastery-new {
+            background: #1a2a4a;
+            color: #64b5f6;
+        }
+
+        .mastery-learning {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        body.dark-mode .mastery-learning {
+            background: #3a2a1a;
+            color: #ffb74d;
+        }
+
+        .mastery-familiar {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        body.dark-mode .mastery-familiar {
+            background: #1a3a1a;
+            color: #81c784;
+        }
+
+        .mastery-mastered {
+            background: #1b5e20;
+            color: #ffffff;
+        }
+        body.dark-mode .mastery-mastered {
+            background: #2e7d32;
+            color: #ffffff;
+        }
+
+        /* ============================================
+           PROGRESS TAB
+           ============================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: 0 2px 4px var(--panel-shadow);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--header-bg-start);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        /* Progress table */
+        .progress-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .progress-table th {
+            background: var(--header-bg-start);
+            color: white;
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .progress-table th:first-child {
+            border-radius: 8px 0 0 0;
+        }
+
+        .progress-table th:last-child {
+            border-radius: 0 8px 0 0;
+        }
+
+        .progress-table td {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .progress-table tr:hover td {
+            background: var(--hover-bg);
+        }
+
+        /* ============================================
+           REVIEW TAB
+           ============================================ */
+        .review-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .review-controls input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .review-controls select {
+            width: auto;
+            min-width: 140px;
+        }
+
+        /* ============================================
+           EMPTY STATE
+           ============================================ */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+
+        .empty-state-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .empty-state-text {
+            font-size: 0.9rem;
+        }
+
+        /* ============================================
+           NOTIFICATION
+           ============================================ */
+        .notification {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            background: var(--header-bg-start);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: opacity 0.3s;
+        }
+
+        /* ============================================
+           LOADING SPINNER
+           ============================================ */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+
+        .spinner.dark {
+            border-color: rgba(0,0,0,0.15);
+            border-top-color: var(--header-bg-start);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================
+           INFO BOX
+           ============================================ */
+        .info-box {
+            background: var(--info-bg);
+            border: 1px solid var(--info-border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .tab-btn {
+                padding: 0.7rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .tab-content {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .study-modes, .import-methods {
+                flex-wrap: wrap;
+            }
+
+            .review-controls {
+                flex-direction: column;
+            }
+
+            .review-controls input[type="text"],
+            .review-controls select {
+                width: 100%;
+            }
+        }
+
+        /* ============================================
+           SET NAME INPUT MODAL
+           ============================================ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1.25rem;
+        }
+
+        /* ============================================
+           TEST RESULTS
+           ============================================ */
+        .test-results {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .test-score {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .test-score.pass {
+            color: var(--correct-border);
+        }
+
+        .test-score.fail {
+            color: var(--incorrect-border);
+        }
+    </style>
+</head>
+<body>
+    <!-- ============================================
+         HEADER
+         ============================================ -->
+    <div class="header">
+        <h1>Multiple Choice Study Tool</h1>
+        <div class="header-controls">
+            <label class="theme-toggle">
+                <span>Dark</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                    <span class="toggle-slider"></span>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <!-- ============================================
+         TAB NAVIGATION
+         ============================================ -->
+    <div class="tab-navigation">
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('import')">Import</button>
+            <button class="tab-btn" onclick="switchTab('study')">Study</button>
+            <button class="tab-btn" onclick="switchTab('progress')">Progress</button>
+            <button class="tab-btn" onclick="switchTab('review')">Review</button>
+        </div>
+    </div>
+
+    <!-- ============================================
+         IMPORT TAB
+         ============================================ -->
+    <div class="tab-content active" id="importTab">
+        <!-- Existing sets -->
+        <div id="importSetsArea"></div>
+
+        <div class="panel">
+            <div class="panel-title">Import Questions</div>
+            <div class="import-methods">
+                <button class="method-btn active" onclick="switchImportMethod('paste')">Paste Text</button>
+                <button class="method-btn" onclick="switchImportMethod('pdf')">Upload PDF</button>
+                <button class="method-btn" onclick="switchImportMethod('gdocs')">Google Docs</button>
+            </div>
+
+            <!-- Paste Text Method -->
+            <div class="import-method active" id="pasteMethod">
+                <label for="pasteInput">Paste your questions below:</label>
+                <textarea id="pasteInput" placeholder="Paste multiple choice questions from your study material here...&#10;&#10;Example:&#10;24. What is the capital of France?&#10;A. London&#10;B. Berlin&#10;C. Paris&#10;D. Madrid"></textarea>
+                <div style="margin-top: 1rem;">
+                    <button class="btn-primary" id="parseBtn" onclick="parseQuestions('paste')">
+                        Extract Questions
+                    </button>
+                </div>
+            </div>
+
+            <!-- PDF Upload Method -->
+            <div class="import-method" id="pdfMethod">
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('pdfInput').click()">
+                    <div class="drop-zone-icon">&#128196;</div>
+                    <div class="drop-zone-text">Drop PDF here or click to upload</div>
+                    <div class="drop-zone-hint">Max 10MB</div>
+                </div>
+                <input type="file" id="pdfInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)">
+                <div id="pdfStatus" style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-secondary);"></div>
+            </div>
+
+            <!-- Google Docs Method -->
+            <div class="import-method" id="gdocsMethod">
+                <div id="gdocsContent"></div>
+            </div>
+        </div>
+
+        <!-- Preview area -->
+        <div id="previewArea" style="display: none;">
+            <div class="panel">
+                <div class="preview-header">
+                    <div class="panel-title">Extracted Questions</div>
+                    <span class="preview-count" id="previewCount"></span>
+                </div>
+                <div id="previewQuestions"></div>
+                <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+                    <button class="btn-primary" onclick="saveQuestionSet()">Save Question Set</button>
+                    <button class="btn-secondary" onclick="clearPreview()">Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         STUDY TAB
+         ============================================ -->
+    <div class="tab-content" id="studyTab">
+        <div id="studySetsArea"></div>
+
+        <div id="studyNoSets" class="empty-state">
+            <div class="empty-state-icon">&#128218;</div>
+            <div class="empty-state-title">No question sets yet</div>
+            <div class="empty-state-text">Import questions from the Import tab to start studying.</div>
+        </div>
+
+        <div id="studyActive" style="display: none;">
+            <div class="study-modes">
+                <button class="mode-btn active" onclick="switchStudyMode('learn')">Learn</button>
+                <button class="mode-btn" onclick="switchStudyMode('test')">Test</button>
+                <button class="mode-btn" onclick="switchStudyMode('review')">Review</button>
+            </div>
+
+            <!-- Session progress -->
+            <div class="session-progress" id="sessionProgress">
+                <div class="session-progress-header">
+                    <span id="sessionProgressText">Question 1 of 10</span>
+                    <span id="sessionScore"></span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="sessionProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Study area - questions rendered here -->
+            <div id="studyArea"></div>
+
+            <!-- Learn mode navigation -->
+            <div class="study-nav" id="studyNav">
+                <button class="btn-secondary" id="prevBtn" onclick="prevQuestion()">Previous</button>
+                <button class="btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+            </div>
+
+            <!-- Test mode submit -->
+            <div id="testSubmitArea" style="display: none; text-align: center; margin-top: 1.5rem;">
+                <button class="btn-primary" onclick="submitTest()" style="font-size: 1.1rem; padding: 0.85rem 2.5rem;">
+                    Submit Test
+                </button>
+            </div>
+
+            <!-- Test results -->
+            <div id="testResults" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         PROGRESS TAB
+         ============================================ -->
+    <div class="tab-content" id="progressTab">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statTotalQuestions">0</div>
+                <div class="stat-label">Total Questions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statMastered">0%</div>
+                <div class="stat-label">Mastered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statAccuracy">0%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statStreak">0</div>
+                <div class="stat-label">Best Streak</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Overall Mastery</div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="progress-bar-container" style="flex: 1; height: 12px;">
+                    <div class="progress-bar-fill" id="masteryBar" style="width: 0%"></div>
+                </div>
+                <span id="masteryPercent" style="font-weight: 700; font-size: 1rem; min-width: 40px;">0%</span>
+            </div>
+        </div>
+
+        <div id="progressSetsArea"></div>
+
+        <div class="panel">
+            <div class="panel-title">Question Breakdown</div>
+            <div style="overflow-x: auto;">
+                <table class="progress-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Question</th>
+                            <th>Correct</th>
+                            <th>Wrong</th>
+                            <th>Mastery</th>
+                            <th>Starred</th>
+                        </tr>
+                    </thead>
+                    <tbody id="progressTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1rem;">
+            <button class="btn-danger" onclick="clearAllProgress()">Clear All Progress</button>
+        </div>
+    </div>
+
+    <!-- ============================================
+         REVIEW TAB
+         ============================================ -->
+    <div class="tab-content" id="reviewTab">
+        <div id="reviewSetsArea"></div>
+
+        <div class="review-controls">
+            <input type="text" id="reviewSearch" placeholder="Search questions..." oninput="renderReview()">
+            <select id="reviewFilter" onchange="renderReview()">
+                <option value="all">All Questions</option>
+                <option value="starred">Starred Only</option>
+                <option value="wrong">Frequently Wrong</option>
+                <option value="unseen">Not Yet Studied</option>
+                <option value="mastered">Mastered</option>
+            </select>
+        </div>
+
+        <div id="reviewContent"></div>
+    </div>
+
+    <!-- ============================================
+         SAVE MODAL
+         ============================================ -->
+    <div class="modal-overlay" id="saveModal">
+        <div class="modal">
+            <h3>Save Question Set</h3>
+            <label for="setNameInput">Set name:</label>
+            <input type="text" id="setNameInput" placeholder="e.g., Midterm Review Ch. 5">
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeSaveModal()">Cancel</button>
+                <button class="btn-primary" onclick="confirmSave()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         JAVASCRIPT
+         ============================================ -->
+    <script>
+        // ============================================
+        // APP STATE
+        // ============================================
+
+        const STORAGE_KEY = 'mcStudyTool';
+
+        let appState = {
+            questionSets: {},
+            activeSetId: null,
+            currentStreak: 0,
+            bestStreak: 0,
+            darkMode: false
+        };
+
+        let sessionState = {
+            currentIndex: 0,
+            questionOrder: [],
+            sessionCorrect: 0,
+            sessionWrong: 0,
+            testAnswers: {},
+            currentMode: 'learn'
+        };
+
+        let parsedQuestions = []; // Temp storage for preview before save
+
+        // ============================================
+        // PERSISTENCE
+        // ============================================
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.error('Save failed:', e);
+            }
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    appState = { ...appState, ...parsed };
+                }
+            } catch (e) {
+                console.error('Load failed:', e);
+            }
+
+            // Apply theme
+            if (appState.darkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggle').checked = true;
+            }
+        }
+
+        // ============================================
+        // THEME
+        // ============================================
+
+        function toggleTheme() {
+            appState.darkMode = !appState.darkMode;
+            document.body.classList.toggle('dark-mode');
+            saveState();
+        }
+
+        // ============================================
+        // TAB NAVIGATION
+        // ============================================
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            const btns = document.querySelectorAll('.tab-btn');
+            const tabOrder = ['import', 'study', 'progress', 'review'];
+            const idx = tabOrder.indexOf(tabName);
+            if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
+
+            // Refresh tab content
+            if (tabName === 'study') loadStudyTab();
+            if (tabName === 'progress') loadProgressTab();
+            if (tabName === 'review') loadReviewTab();
+            if (tabName === 'import') loadImportTab();
+        }
+
+        // ============================================
+        // IMPORT TAB
+        // ============================================
+
+        function loadImportTab() {
+            renderSetSelector('importSetsArea', false);
+            checkGoogleStatus();
+        }
+
+        function switchImportMethod(method) {
+            document.querySelectorAll('.import-method').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.method-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(method + 'Method').classList.add('active');
+            const methods = ['paste', 'pdf', 'gdocs'];
+            const btns = document.querySelectorAll('.method-btn');
+            const idx = methods.indexOf(method);
+            if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
+        }
+
+        // ---- Paste ----
+
+        async function parseQuestions(source) {
+            let text = '';
+
+            if (source === 'paste') {
+                text = document.getElementById('pasteInput').value.trim();
+            } else if (source === 'gdocs') {
+                text = window._gdocsExtractedText || '';
+            } else if (source === 'pdf') {
+                text = window._pdfExtractedText || '';
+            }
+
+            if (!text) {
+                showNotification('No text to parse');
+                return;
+            }
+
+            const btn = document.getElementById('parseBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Extracting...';
+            }
+
+            try {
+                const res = await fetch('/api/parse-questions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                const data = await res.json();
+
+                if (data.questions && data.questions.length > 0) {
+                    parsedQuestions = data.questions;
+                    showPreview(data.questions);
+                    showNotification(`Found ${data.questions.length} multiple choice questions`);
+                } else if (data.error) {
+                    showNotification('Error: ' + data.error);
+                } else {
+                    showNotification('No multiple choice questions found in the text');
+                }
+            } catch (err) {
+                showNotification('Failed to parse questions: ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Extract Questions';
+                }
+            }
+        }
+
+        function showPreview(questions) {
+            const area = document.getElementById('previewArea');
+            const countEl = document.getElementById('previewCount');
+            const listEl = document.getElementById('previewQuestions');
+
+            countEl.textContent = `${questions.length} question${questions.length !== 1 ? 's' : ''}`;
+
+            let html = '';
+            questions.forEach((q, i) => {
+                html += `<div class="preview-question">
+                    <div class="preview-question-num">Question ${q.number || (i + 1)}</div>
+                    <div class="preview-question-text">${escapeHtml(q.question)}</div>`;
+                (q.options || []).forEach(opt => {
+                    html += `<div class="preview-option">${opt.letter}. ${escapeHtml(opt.text)}</div>`;
+                });
+                if (q.correctAnswer) {
+                    html += `<div style="margin-top: 0.4rem; font-size: 0.8rem; color: var(--correct-border); font-weight: 600;">Answer: ${q.correctAnswer}</div>`;
+                }
+                html += '</div>';
+            });
+
+            listEl.innerHTML = html;
+            area.style.display = 'block';
+            area.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function clearPreview() {
+            parsedQuestions = [];
+            document.getElementById('previewArea').style.display = 'none';
+        }
+
+        function saveQuestionSet() {
+            if (parsedQuestions.length === 0) return;
+            document.getElementById('setNameInput').value = '';
+            document.getElementById('saveModal').classList.add('active');
+            document.getElementById('setNameInput').focus();
+        }
+
+        function closeSaveModal() {
+            document.getElementById('saveModal').classList.remove('active');
+        }
+
+        function confirmSave() {
+            const name = document.getElementById('setNameInput').value.trim();
+            if (!name) {
+                showNotification('Please enter a name for this set');
+                return;
+            }
+
+            const setId = 'set_' + Date.now();
+            appState.questionSets[setId] = {
+                name,
+                createdAt: Date.now(),
+                questions: parsedQuestions.map((q, i) => ({
+                    ...q,
+                    id: q.id || ('q' + (q.number || i))
+                })),
+                progress: {}
+            };
+            appState.activeSetId = setId;
+
+            saveState();
+            closeSaveModal();
+            clearPreview();
+            document.getElementById('pasteInput').value = '';
+            showNotification(`Saved "${name}" with ${parsedQuestions.length} questions`);
+            loadImportTab();
+        }
+
+        // ---- PDF Upload ----
+
+        function setupDropZone() {
+            const zone = document.getElementById('dropZone');
+            if (!zone) return;
+
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type === 'application/pdf') {
+                    uploadPdf(file);
+                } else {
+                    showNotification('Please upload a PDF file');
+                }
+            });
+        }
+
+        function handlePdfUpload(event) {
+            const file = event.target.files[0];
+            if (file) uploadPdf(file);
+        }
+
+        async function uploadPdf(file) {
+            const status = document.getElementById('pdfStatus');
+            status.innerHTML = '<span class="spinner dark"></span> Uploading and extracting text...';
+
+            const formData = new FormData();
+            formData.append('pdf', file);
+
+            try {
+                const res = await fetch('/api/upload-pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (data.text) {
+                    window._pdfExtractedText = data.text;
+                    status.innerHTML = `Extracted text from ${data.pages} page${data.pages !== 1 ? 's' : ''}. ` +
+                        `<button class="btn-primary" style="margin-left: 0.5rem; padding: 0.4rem 1rem; font-size: 0.85rem;" ` +
+                        `onclick="parseQuestions('pdf')">Extract Questions</button>`;
+                } else {
+                    status.textContent = 'Error: ' + (data.error || 'Failed to extract text');
+                }
+            } catch (err) {
+                status.textContent = 'Upload failed: ' + err.message;
+            }
+        }
+
+        // ---- Google Docs ----
+
+        async function checkGoogleStatus() {
+            const container = document.getElementById('gdocsContent');
+            try {
+                const res = await fetch('/auth/google/status');
+                const data = await res.json();
+
+                if (!data.enabled) {
+                    container.innerHTML = `<div class="info-box">Google Docs integration is not configured. Add Google OAuth credentials to .env to enable.</div>`;
+                } else if (!data.authenticated) {
+                    container.innerHTML = `
+                        <div class="info-box">Connect your Google account to import questions directly from Google Docs.</div>
+                        <button class="btn-primary" onclick="window.location.href='/auth/google'">Connect Google Account</button>`;
+                } else {
+                    container.innerHTML = `
+                        <div class="gdocs-search">
+                            <input type="text" id="gdocsSearchInput" placeholder="Search your documents..." onkeydown="if(event.key==='Enter')searchGDocs()">
+                            <button class="btn-primary" onclick="searchGDocs()">Search</button>
+                            <button class="btn-secondary" onclick="searchGDocs('')">Recent</button>
+                        </div>
+                        <div id="gdocsDocList"></div>
+                        <div id="gdocsDocViewer" style="display:none;"></div>
+                        <div style="margin-top: 1rem;">
+                            <button class="btn-secondary" onclick="disconnectGoogle()" style="font-size: 0.8rem; opacity: 0.7;">
+                                Disconnect Google Account
+                            </button>
+                        </div>`;
+                }
+            } catch {
+                container.innerHTML = '<div class="info-box">Could not check Google status.</div>';
+            }
+        }
+
+        async function searchGDocs(query) {
+            const q = query !== undefined ? query : (document.getElementById('gdocsSearchInput')?.value || '');
+            const list = document.getElementById('gdocsDocList');
+            list.innerHTML = '<span class="spinner dark"></span> Searching...';
+
+            try {
+                const res = await fetch(`/api/gdocs/search?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    list.innerHTML = `<div class="info-box">${data.error}</div>`;
+                    return;
+                }
+
+                if (!data.files || data.files.length === 0) {
+                    list.innerHTML = '<div style="padding: 1rem; color: var(--text-secondary);">No documents found.</div>';
+                    return;
+                }
+
+                let html = '<div class="doc-list">';
+                data.files.forEach(file => {
+                    const date = new Date(file.modifiedTime).toLocaleDateString();
+                    html += `<div class="doc-item" onclick="selectGDoc('${file.id}', '${escapeHtml(file.name)}')">
+                        <span class="doc-item-name">${escapeHtml(file.name)}</span>
+                        <span class="doc-item-date">${date}</span>
+                    </div>`;
+                });
+                html += '</div>';
+                list.innerHTML = html;
+            } catch (err) {
+                list.innerHTML = `<div class="info-box">Search failed: ${err.message}</div>`;
+            }
+        }
+
+        async function selectGDoc(docId, docName) {
+            const viewer = document.getElementById('gdocsDocViewer');
+            viewer.style.display = 'block';
+            viewer.innerHTML = '<span class="spinner dark"></span> Loading document...';
+
+            try {
+                const res = await fetch(`/api/gdocs/${docId}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    viewer.innerHTML = `<div class="info-box">${data.error}</div>`;
+                    return;
+                }
+
+                window._gdocsExtractedText = data.text;
+                viewer.innerHTML = `
+                    <div class="panel" style="margin-top: 1rem;">
+                        <div class="panel-title">${escapeHtml(data.title)}</div>
+                        <div style="max-height: 300px; overflow-y: auto; font-size: 0.85rem; color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            ${data.html || escapeHtml(data.text).substring(0, 2000)}
+                        </div>
+                        <button class="btn-primary" onclick="parseQuestions('gdocs')">Extract Questions</button>
+                    </div>`;
+            } catch (err) {
+                viewer.innerHTML = `<div class="info-box">Failed to load: ${err.message}</div>`;
+            }
+        }
+
+        async function disconnectGoogle() {
+            if (!confirm('Disconnect your Google account?')) return;
+            await fetch('/auth/google/disconnect', { method: 'POST' });
+            checkGoogleStatus();
+            showNotification('Google account disconnected');
+        }
+
+        // ============================================
+        // SET MANAGEMENT
+        // ============================================
+
+        function renderSetSelector(containerId, showDelete = true) {
+            const container = document.getElementById(containerId);
+            const ids = Object.keys(appState.questionSets);
+
+            if (ids.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="set-selector">';
+            ids.forEach(id => {
+                const set = appState.questionSets[id];
+                const isActive = id === appState.activeSetId;
+                const qCount = set.questions.length;
+                html += `<div class="set-chip${isActive ? ' active' : ''}" onclick="selectSet('${id}')">
+                    ${escapeHtml(set.name)} (${qCount})`;
+                if (showDelete) {
+                    html += `<span class="delete-set" onclick="event.stopPropagation(); deleteSet('${id}')" title="Delete">&times;</span>`;
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function selectSet(setId) {
+            appState.activeSetId = setId;
+            saveState();
+
+            // Refresh whatever tab is active
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                const tabName = activeTab.id.replace('Tab', '');
+                switchTab(tabName);
+            }
+        }
+
+        function deleteSet(setId) {
+            const set = appState.questionSets[setId];
+            if (!set) return;
+            if (!confirm(`Delete "${set.name}"? This cannot be undone.`)) return;
+
+            delete appState.questionSets[setId];
+            if (appState.activeSetId === setId) {
+                const remaining = Object.keys(appState.questionSets);
+                appState.activeSetId = remaining.length > 0 ? remaining[0] : null;
+            }
+            saveState();
+            showNotification(`Deleted "${set.name}"`);
+
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                const tabName = activeTab.id.replace('Tab', '');
+                switchTab(tabName);
+            }
+        }
+
+        // ============================================
+        // STUDY TAB
+        // ============================================
+
+        function loadStudyTab() {
+            const ids = Object.keys(appState.questionSets);
+            renderSetSelector('studySetsArea', true);
+
+            if (ids.length === 0) {
+                document.getElementById('studyNoSets').style.display = 'block';
+                document.getElementById('studyActive').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('studyNoSets').style.display = 'none';
+            document.getElementById('studyActive').style.display = 'block';
+
+            if (!appState.activeSetId || !appState.questionSets[appState.activeSetId]) {
+                appState.activeSetId = ids[0];
+                saveState();
+            }
+
+            startStudySession();
+        }
+
+        function switchStudyMode(mode) {
+            sessionState.currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
+            const modes = ['learn', 'test', 'review'];
+            const btns = document.querySelectorAll('.mode-btn');
+            const idx = modes.indexOf(mode);
+            if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
+
+            startStudySession();
+        }
+
+        function startStudySession() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set || set.questions.length === 0) {
+                document.getElementById('studyArea').innerHTML =
+                    '<div class="empty-state"><div class="empty-state-title">No questions in this set</div></div>';
+                return;
+            }
+
+            // Reset session
+            sessionState.sessionCorrect = 0;
+            sessionState.sessionWrong = 0;
+            sessionState.testAnswers = {};
+
+            if (sessionState.currentMode === 'learn') {
+                startLearnMode(set);
+            } else if (sessionState.currentMode === 'test') {
+                startTestMode(set);
+            } else {
+                startReviewMode(set);
+            }
+        }
+
+        // ---- Learn Mode ----
+
+        function startLearnMode(set) {
+            const questions = set.questions;
+            const progress = set.progress;
+
+            const masteryOrder = { 'new': 0, 'learning': 1, 'familiar': 2, 'mastered': 3 };
+
+            sessionState.questionOrder = questions.map((_, i) => i);
+            sessionState.questionOrder.sort((a, b) => {
+                const pa = progress[questions[a].id] || { mastery: 'new', wrong: 0 };
+                const pb = progress[questions[b].id] || { mastery: 'new', wrong: 0 };
+                const mDiff = (masteryOrder[pa.mastery] || 0) - (masteryOrder[pb.mastery] || 0);
+                if (mDiff !== 0) return mDiff;
+                return (pb.wrong || 0) - (pa.wrong || 0);
+            });
+
+            sessionState.currentIndex = 0;
+
+            document.getElementById('sessionProgress').style.display = 'block';
+            document.getElementById('studyNav').style.display = 'flex';
+            document.getElementById('testSubmitArea').style.display = 'none';
+            document.getElementById('testResults').style.display = 'none';
+
+            renderLearnQuestion();
+        }
+
+        function renderLearnQuestion() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+
+            const qIdx = sessionState.questionOrder[sessionState.currentIndex];
+            const q = set.questions[qIdx];
+            const prog = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
+            const total = sessionState.questionOrder.length;
+
+            // Update progress bar
+            document.getElementById('sessionProgressText').textContent =
+                `Question ${sessionState.currentIndex + 1} of ${total}`;
+            document.getElementById('sessionScore').textContent =
+                `${sessionState.sessionCorrect} correct, ${sessionState.sessionWrong} wrong`;
+            document.getElementById('sessionProgressBar').style.width =
+                `${((sessionState.currentIndex + 1) / total) * 100}%`;
+
+            let html = `<div class="question-card" id="currentCard">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div class="question-number">
+                        Question ${q.number || (qIdx + 1)}
+                        <span class="mastery-badge mastery-${prog.mastery}">${prog.mastery}</span>
+                    </div>
+                    <button class="star-btn ${prog.starred ? 'starred' : ''}"
+                            onclick="toggleStar('${q.id}')">
+                        ${prog.starred ? '\u2605' : '\u2606'}
+                    </button>
+                </div>
+                <div class="question-text">${escapeHtml(q.question)}</div>
+                <div class="mc-options" id="optionsContainer">`;
+
+            q.options.forEach(opt => {
+                html += `<div class="mc-option" onclick="selectLearnAnswer('${escapeAttr(opt.letter)}', '${escapeAttr(q.id)}')"
+                             id="option_${opt.letter}">
+                    <div class="option-letter">${escapeHtml(opt.letter)}</div>
+                    <div class="option-text">${escapeHtml(opt.text)}</div>
+                </div>`;
+            });
+
+            html += `</div>
+                <div id="feedbackArea"></div>
+            </div>`;
+
+            document.getElementById('studyArea').innerHTML = html;
+
+            document.getElementById('prevBtn').disabled = sessionState.currentIndex === 0;
+            document.getElementById('nextBtn').disabled = sessionState.currentIndex >= total - 1;
+        }
+
+        function selectLearnAnswer(selectedLetter, questionId) {
+            const set = appState.questionSets[appState.activeSetId];
+            const q = set.questions.find(q => q.id === questionId);
+            if (!q) return;
+
+            // Disable all options
+            document.querySelectorAll('.mc-option').forEach(el => {
+                el.classList.add('disabled');
+                el.onclick = null;
+            });
+
+            const isCorrect = q.correctAnswer && selectedLetter.toUpperCase() === q.correctAnswer.toUpperCase();
+
+            // Highlight selected
+            const selectedEl = document.getElementById('option_' + selectedLetter);
+            if (selectedEl) {
+                selectedEl.classList.add(isCorrect ? 'correct-answer' : 'wrong-answer');
+            }
+
+            // Highlight correct answer if wrong
+            if (!isCorrect && q.correctAnswer) {
+                const correctEl = document.getElementById('option_' + q.correctAnswer);
+                if (correctEl) correctEl.classList.add('correct-answer');
+            }
+
+            // Update progress
+            if (!set.progress[questionId]) {
+                set.progress[questionId] = { correct: 0, wrong: 0, lastSeen: null, starred: false, mastery: 'new' };
+            }
+
+            const prog = set.progress[questionId];
+            prog.lastSeen = Date.now();
+
+            if (q.correctAnswer) {
+                if (isCorrect) {
+                    prog.correct++;
+                    sessionState.sessionCorrect++;
+                    appState.currentStreak++;
+                    if (appState.currentStreak > appState.bestStreak) {
+                        appState.bestStreak = appState.currentStreak;
+                    }
+                } else {
+                    prog.wrong++;
+                    sessionState.sessionWrong++;
+                    appState.currentStreak = 0;
+                }
+                prog.mastery = calculateMastery(prog);
+            }
+
+            saveState();
+
+            // Show feedback
+            const feedback = document.getElementById('feedbackArea');
+            if (q.correctAnswer) {
+                if (isCorrect) {
+                    feedback.innerHTML = `<div class="feedback correct">Correct!</div>`;
+                } else {
+                    feedback.innerHTML = `<div class="feedback incorrect">
+                        Incorrect. The correct answer is ${escapeHtml(q.correctAnswer)}.
+                        ${q.explanation ? `<div class="explanation">${escapeHtml(q.explanation)}</div>` : ''}
+                    </div>`;
+                }
+            } else {
+                feedback.innerHTML = `<div class="feedback" style="background: var(--info-bg); border-color: var(--info-border); color: var(--text-primary);">
+                    You selected ${escapeHtml(selectedLetter)}. (No answer key available for this question)
+                </div>`;
+            }
+
+            document.getElementById('sessionScore').textContent =
+                `${sessionState.sessionCorrect} correct, ${sessionState.sessionWrong} wrong`;
+
+            // Auto advance on correct after delay
+            if (isCorrect) {
+                setTimeout(() => {
+                    if (sessionState.currentIndex < sessionState.questionOrder.length - 1) {
+                        nextQuestion();
+                    }
+                }, 1200);
+            }
+        }
+
+        function calculateMastery(prog) {
+            const total = prog.correct + prog.wrong;
+            if (total === 0) return 'new';
+            const ratio = prog.correct / total;
+            if (prog.correct >= 3 && ratio >= 0.85) return 'mastered';
+            if (prog.correct >= 2 && ratio >= 0.6) return 'familiar';
+            return 'learning';
+        }
+
+        function nextQuestion() {
+            if (sessionState.currentIndex < sessionState.questionOrder.length - 1) {
+                sessionState.currentIndex++;
+                renderLearnQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (sessionState.currentIndex > 0) {
+                sessionState.currentIndex--;
+                renderLearnQuestion();
+            }
+        }
+
+        function toggleStar(questionId) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+
+            if (!set.progress[questionId]) {
+                set.progress[questionId] = { correct: 0, wrong: 0, lastSeen: null, starred: false, mastery: 'new' };
+            }
+
+            set.progress[questionId].starred = !set.progress[questionId].starred;
+            saveState();
+
+            // Re-render depending on mode
+            if (sessionState.currentMode === 'learn') {
+                renderLearnQuestion();
+            } else if (sessionState.currentMode === 'review') {
+                startReviewMode(set);
+            }
+        }
+
+        // ---- Test Mode ----
+
+        function startTestMode(set) {
+            sessionState.testAnswers = {};
+            sessionState.questionOrder = set.questions.map((_, i) => i);
+
+            document.getElementById('sessionProgress').style.display = 'block';
+            document.getElementById('studyNav').style.display = 'none';
+            document.getElementById('testSubmitArea').style.display = 'block';
+            document.getElementById('testResults').style.display = 'none';
+
+            document.getElementById('sessionProgressText').textContent =
+                `Test: ${set.questions.length} questions`;
+            document.getElementById('sessionScore').textContent = '';
+            document.getElementById('sessionProgressBar').style.width = '0%';
+
+            let html = '';
+            set.questions.forEach((q, i) => {
+                html += `<div class="question-card" id="testCard_${i}">
+                    <div class="question-number">Question ${q.number || (i + 1)}</div>
+                    <div class="question-text">${escapeHtml(q.question)}</div>
+                    <div class="mc-options">`;
+
+                q.options.forEach(opt => {
+                    html += `<div class="mc-option" onclick="selectTestAnswer(${i}, '${escapeAttr(opt.letter)}')"
+                                 id="test_${i}_${opt.letter}">
+                        <div class="option-letter">${escapeHtml(opt.letter)}</div>
+                        <div class="option-text">${escapeHtml(opt.text)}</div>
+                    </div>`;
+                });
+
+                html += `</div></div>`;
+            });
+
+            document.getElementById('studyArea').innerHTML = html;
+        }
+
+        function selectTestAnswer(questionIndex, letter) {
+            const set = appState.questionSets[appState.activeSetId];
+
+            // Deselect previous
+            const prev = sessionState.testAnswers[questionIndex];
+            if (prev) {
+                const prevEl = document.getElementById(`test_${questionIndex}_${prev}`);
+                if (prevEl) prevEl.classList.remove('selected');
+            }
+
+            // Select new
+            sessionState.testAnswers[questionIndex] = letter;
+            const el = document.getElementById(`test_${questionIndex}_${letter}`);
+            if (el) el.classList.add('selected');
+
+            // Update progress
+            const answered = Object.keys(sessionState.testAnswers).length;
+            const total = set.questions.length;
+            document.getElementById('sessionProgressBar').style.width =
+                `${(answered / total) * 100}%`;
+            document.getElementById('sessionScore').textContent =
+                `${answered} of ${total} answered`;
+        }
+
+        function submitTest() {
+            const set = appState.questionSets[appState.activeSetId];
+            const questions = set.questions;
+            const unanswered = questions.length - Object.keys(sessionState.testAnswers).length;
+
+            if (unanswered > 0) {
+                if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+            }
+
+            let correct = 0;
+            let wrong = 0;
+            let noKey = 0;
+
+            questions.forEach((q, i) => {
+                const selected = sessionState.testAnswers[i];
+
+                if (!set.progress[q.id]) {
+                    set.progress[q.id] = { correct: 0, wrong: 0, lastSeen: null, starred: false, mastery: 'new' };
+                }
+                set.progress[q.id].lastSeen = Date.now();
+
+                const card = document.getElementById(`testCard_${i}`);
+
+                if (selected && q.correctAnswer) {
+                    const isCorrect = selected.toUpperCase() === q.correctAnswer.toUpperCase();
+                    if (isCorrect) {
+                        set.progress[q.id].correct++;
+                        correct++;
+                        if (card) card.classList.add('correct');
+                    } else {
+                        set.progress[q.id].wrong++;
+                        wrong++;
+                        if (card) card.classList.add('incorrect');
+                    }
+                    set.progress[q.id].mastery = calculateMastery(set.progress[q.id]);
+                } else if (!q.correctAnswer) {
+                    noKey++;
+                }
+
+                // Disable and highlight options
+                document.querySelectorAll(`[id^="test_${i}_"]`).forEach(el => {
+                    el.classList.add('disabled');
+                    el.onclick = null;
+                });
+
+                if (q.correctAnswer) {
+                    const correctEl = document.getElementById(`test_${i}_${q.correctAnswer}`);
+                    if (correctEl) correctEl.classList.add('correct-answer');
+                }
+                if (selected && q.correctAnswer && selected.toUpperCase() !== q.correctAnswer.toUpperCase()) {
+                    const wrongEl = document.getElementById(`test_${i}_${selected}`);
+                    if (wrongEl) wrongEl.classList.add('wrong-answer');
+                }
+            });
+
+            saveState();
+
+            document.getElementById('testSubmitArea').style.display = 'none';
+
+            const gradeable = questions.length - noKey;
+            const pct = gradeable > 0 ? Math.round((correct / gradeable) * 100) : 0;
+
+            document.getElementById('testResults').style.display = 'block';
+            document.getElementById('testResults').innerHTML = `
+                <div class="test-results">
+                    <div class="test-score ${pct >= 70 ? 'pass' : 'fail'}">${pct}%</div>
+                    <div style="font-size: 1.1rem; margin-top: 0.5rem;">
+                        ${correct} correct out of ${gradeable}
+                        ${wrong > 0 ? ` (${wrong} wrong)` : ''}
+                        ${noKey > 0 ? `<br><span style="font-size: 0.85rem; color: var(--text-secondary);">${noKey} questions had no answer key</span>` : ''}
+                    </div>
+                    <button class="btn-primary" onclick="startStudySession()" style="margin-top: 1.25rem;">
+                        Retake Test
+                    </button>
+                </div>`;
+        }
+
+        // ---- Review Mode (in Study tab) ----
+
+        function startReviewMode(set) {
+            document.getElementById('sessionProgress').style.display = 'none';
+            document.getElementById('studyNav').style.display = 'none';
+            document.getElementById('testSubmitArea').style.display = 'none';
+            document.getElementById('testResults').style.display = 'none';
+
+            let html = '';
+            set.questions.forEach((q, i) => {
+                const prog = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
+
+                html += `<div class="question-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div class="question-number">
+                            Question ${q.number || (i + 1)}
+                            <span class="mastery-badge mastery-${prog.mastery}">${prog.mastery}</span>
+                        </div>
+                        <button class="star-btn ${prog.starred ? 'starred' : ''}"
+                                onclick="toggleStar('${escapeAttr(q.id)}')">
+                            ${prog.starred ? '\u2605' : '\u2606'}
+                        </button>
+                    </div>
+                    <div class="question-text">${escapeHtml(q.question)}</div>
+                    <div class="mc-options">`;
+
+                q.options.forEach(opt => {
+                    const isCorrect = q.correctAnswer && q.correctAnswer.toUpperCase() === opt.letter.toUpperCase();
+                    html += `<div class="mc-option${isCorrect ? ' correct-answer' : ''}" style="cursor: default;">
+                        <div class="option-letter">${escapeHtml(opt.letter)}</div>
+                        <div class="option-text">${escapeHtml(opt.text)}</div>
+                    </div>`;
+                });
+
+                html += '</div>';
+                if (q.explanation) {
+                    html += `<div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.75rem; padding: 0.5rem; background: var(--hover-bg); border-radius: 6px;">
+                        ${escapeHtml(q.explanation)}</div>`;
+                }
+                html += '</div>';
+            });
+
+            document.getElementById('studyArea').innerHTML = html || '<div class="empty-state"><div class="empty-state-title">No questions to review</div></div>';
+        }
+
+        // ============================================
+        // PROGRESS TAB
+        // ============================================
+
+        function loadProgressTab() {
+            const sets = appState.questionSets;
+            const ids = Object.keys(sets);
+
+            let totalQuestions = 0;
+            let totalMastered = 0;
+            let totalCorrect = 0;
+            let totalWrong = 0;
+
+            ids.forEach(id => {
+                const set = sets[id];
+                totalQuestions += set.questions.length;
+                Object.values(set.progress).forEach(p => {
+                    if (p.mastery === 'mastered') totalMastered++;
+                    totalCorrect += (p.correct || 0);
+                    totalWrong += (p.wrong || 0);
+                });
+            });
+
+            const masteryPct = totalQuestions > 0 ? Math.round((totalMastered / totalQuestions) * 100) : 0;
+            const accuracy = (totalCorrect + totalWrong) > 0
+                ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0;
+
+            document.getElementById('statTotalQuestions').textContent = totalQuestions;
+            document.getElementById('statMastered').textContent = masteryPct + '%';
+            document.getElementById('statStreak').textContent = appState.bestStreak;
+            document.getElementById('statAccuracy').textContent = accuracy + '%';
+            document.getElementById('masteryPercent').textContent = masteryPct + '%';
+            document.getElementById('masteryBar').style.width = masteryPct + '%';
+
+            renderSetSelector('progressSetsArea', false);
+            renderProgressTable();
+        }
+
+        function renderProgressTable() {
+            const tbody = document.getElementById('progressTableBody');
+            const set = appState.questionSets[appState.activeSetId];
+
+            if (!set) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No question set selected.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            set.questions.forEach((q, i) => {
+                const p = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
+
+                html += `<tr>
+                    <td style="text-align: center; font-weight: 600;">${q.number || (i + 1)}</td>
+                    <td style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${escapeHtml(q.question.substring(0, 80))}${q.question.length > 80 ? '...' : ''}</td>
+                    <td style="text-align: center; color: var(--correct-border); font-weight: 600;">${p.correct || 0}</td>
+                    <td style="text-align: center; color: var(--incorrect-border); font-weight: 600;">${p.wrong || 0}</td>
+                    <td style="text-align: center;"><span class="mastery-badge mastery-${p.mastery}">${p.mastery}</span></td>
+                    <td style="text-align: center;">${p.starred ? '\u2605' : '-'}</td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No questions.</td></tr>';
+        }
+
+        function clearAllProgress() {
+            if (!confirm('This will reset ALL progress for ALL question sets. Are you sure?')) return;
+
+            Object.values(appState.questionSets).forEach(set => {
+                Object.keys(set.progress).forEach(qId => {
+                    set.progress[qId] = {
+                        correct: 0,
+                        wrong: 0,
+                        lastSeen: null,
+                        starred: set.progress[qId]?.starred || false,
+                        mastery: 'new'
+                    };
+                });
+            });
+            appState.currentStreak = 0;
+            appState.bestStreak = 0;
+            saveState();
+            loadProgressTab();
+            showNotification('All progress cleared');
+        }
+
+        // ============================================
+        // REVIEW TAB
+        // ============================================
+
+        function loadReviewTab() {
+            renderSetSelector('reviewSetsArea', false);
+            renderReview();
+        }
+
+        function renderReview() {
+            const content = document.getElementById('reviewContent');
+            const set = appState.questionSets[appState.activeSetId];
+
+            if (!set) {
+                content.innerHTML = '<div class="empty-state"><div class="empty-state-title">No question set selected</div><div class="empty-state-text">Import questions from the Import tab first.</div></div>';
+                return;
+            }
+
+            const filter = document.getElementById('reviewFilter')?.value || 'all';
+            const search = (document.getElementById('reviewSearch')?.value || '').toLowerCase();
+
+            const filtered = set.questions.filter((q) => {
+                const p = set.progress[q.id] || {};
+
+                if (filter === 'starred' && !p.starred) return false;
+                if (filter === 'wrong' && (p.wrong || 0) < 2) return false;
+                if (filter === 'unseen' && p.lastSeen) return false;
+                if (filter === 'mastered' && p.mastery !== 'mastered') return false;
+
+                if (search && !q.question.toLowerCase().includes(search)) {
+                    const optMatch = q.options.some(o => o.text.toLowerCase().includes(search));
+                    if (!optMatch) return false;
+                }
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                content.innerHTML = '<div class="empty-state"><div class="empty-state-title">No questions match</div><div class="empty-state-text">Try a different filter or search term.</div></div>';
+                return;
+            }
+
+            let html = `<div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+                Showing ${filtered.length} of ${set.questions.length} questions</div>`;
+
+            filtered.forEach((q, i) => {
+                const p = set.progress[q.id] || { correct: 0, wrong: 0, mastery: 'new', starred: false };
+
+                html += `<div class="question-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div class="question-number">
+                            Question ${q.number || (i + 1)}
+                            <span class="mastery-badge mastery-${p.mastery}">${p.mastery}</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">
+                                ${p.correct || 0}/${(p.correct || 0) + (p.wrong || 0)}
+                            </span>
+                            <button class="star-btn ${p.starred ? 'starred' : ''}"
+                                    onclick="toggleStarReview('${escapeAttr(q.id)}')">
+                                ${p.starred ? '\u2605' : '\u2606'}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="question-text">${escapeHtml(q.question)}</div>
+                    <div class="mc-options">`;
+
+                q.options.forEach(opt => {
+                    const isCorrect = q.correctAnswer && q.correctAnswer.toUpperCase() === opt.letter.toUpperCase();
+                    html += `<div class="mc-option${isCorrect ? ' correct-answer' : ''}" style="cursor: default;">
+                        <div class="option-letter">${escapeHtml(opt.letter)}</div>
+                        <div class="option-text">${escapeHtml(opt.text)}</div>
+                    </div>`;
+                });
+
+                html += '</div>';
+                if (q.explanation) {
+                    html += `<div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.75rem; padding: 0.5rem; background: var(--hover-bg); border-radius: 6px;">
+                        ${escapeHtml(q.explanation)}</div>`;
+                }
+                html += '</div>';
+            });
+
+            content.innerHTML = html;
+        }
+
+        function toggleStarReview(questionId) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+
+            if (!set.progress[questionId]) {
+                set.progress[questionId] = { correct: 0, wrong: 0, lastSeen: null, starred: false, mastery: 'new' };
+            }
+
+            set.progress[questionId].starred = !set.progress[questionId].starred;
+            saveState();
+            renderReview();
+        }
+
+        // ============================================
+        // UTILITIES
+        // ============================================
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeAttr(str) {
+            return escapeHtml(str).replace(/'/g, '&#39;');
+        }
+
+        function showNotification(message) {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const div = document.createElement('div');
+            div.className = 'notification';
+            div.textContent = message;
+            document.body.prepend(div);
+
+            setTimeout(() => {
+                div.style.opacity = '0';
+                setTimeout(() => div.remove(), 300);
+            }, 3000);
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            loadImportTab();
+            setupDropZone();
+
+            // Handle OAuth hash redirect
+            const hash = window.location.hash.replace('#', '').replace('Tab', '');
+            if (hash) {
+                const tabMap = { 'import': 'import', 'study': 'study', 'progress': 'progress', 'review': 'review' };
+                if (tabMap[hash]) {
+                    switchTab(hash);
+                }
+            }
+
+            // Enter key on save modal
+            document.getElementById('setNameInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') confirmSave();
+            });
+        });
+    </script>
+</body>
+</html>
