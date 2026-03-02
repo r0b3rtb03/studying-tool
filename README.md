@@ -1,6 +1,6 @@
 # Multiple Choice Study Tool
 
-This application is an AI-powered study tool designed to transform raw text, PDF documents, and Google Docs into interactive, multiple-choice quizzes. It utilizes the Claude (Anthropic) API to automatically extract questions, options, and answer keys from provided materials.
+This application is an AI-powered study tool designed to transform raw text, PDF documents, and Google Docs into interactive, multiple-choice quizzes. It utilizes the Claude (Anthropic) API to automatically extract questions, options, and answer keys from provided materials. Because I'm banned off quizlet this is my only option!
 
 ---
 
