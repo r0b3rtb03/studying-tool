@@ -14,8 +14,8 @@
             --text-primary: #333;
             --text-secondary: #666;
             --border-color: #d0d0d0;
-            --header-bg-start: #5a7a4a;
-            --header-bg-end: #4a6a3a;
+            --header-bg-start: #4a6fa5;
+            --header-bg-end: #3a5f95;
             --panel-shadow: rgba(0,0,0,0.08);
             --input-bg: #ffffff;
             --hover-bg: #f0f0eb;
@@ -23,8 +23,8 @@
             --correct-border: #28a745;
             --incorrect-bg: #fce4ec;
             --incorrect-border: #dc3545;
-            --info-bg: #fff9e6;
-            --info-border: #e6d99f;
+            --info-bg: #e8f0fe;
+            --info-border: #a8c4e6;
         }
 
         /* ============================================
@@ -36,8 +36,8 @@
             --text-primary: #e0e0e0;
             --text-secondary: #b0b0b0;
             --border-color: #444;
-            --header-bg-start: #3a5a2a;
-            --header-bg-end: #2a4a1a;
+            --header-bg-start: #3a5f85;
+            --header-bg-end: #2a4f75;
             --panel-shadow: rgba(0,0,0,0.3);
             --input-bg: #3a3a3a;
             --hover-bg: #353535;
@@ -45,8 +45,8 @@
             --correct-border: #28a745;
             --incorrect-bg: #3a1a1a;
             --incorrect-border: #dc3545;
-            --info-bg: #3d3d1a;
-            --info-border: #5a5a1a;
+            --info-bg: #1a2a3d;
+            --info-border: #2a4a6a;
         }
 
         /* ============================================
@@ -376,94 +376,69 @@
             margin-top: 0.25rem;
         }
 
-        /* Google Docs search */
-        .gdocs-search {
+        /* ============================================
+           FLASHCARD LIST (Quizlet-style for Home tab)
+           ============================================ */
+        .flashcard-item {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .gdocs-search input {
-            flex: 1;
-        }
-
-        .doc-list {
-            max-height: 300px;
-            overflow-y: auto;
             border: 1px solid var(--border-color);
             border-radius: 8px;
+            margin-bottom: 0.75rem;
+            background: var(--bg-secondary);
+            overflow: hidden;
+            transition: box-shadow 0.2s;
         }
 
-        .doc-item {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: background 0.2s;
+        .flashcard-item:hover {
+            box-shadow: 0 2px 8px var(--panel-shadow);
+        }
+
+        .flashcard-left {
+            flex: 2;
+            padding: 1rem;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .flashcard-q-num {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .flashcard-q-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .flashcard-options-list {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 0.2rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .flashcard-right {
+            flex: 1;
+            padding: 1rem;
+            display: flex;
             align-items: center;
-        }
-
-        .doc-item:last-child {
-            border-bottom: none;
-        }
-
-        .doc-item:hover {
+            justify-content: center;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--header-bg-start);
             background: var(--hover-bg);
         }
 
-        .doc-item-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .doc-item-date {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        /* Preview area */
-        .preview-area {
-            margin-top: 1rem;
-        }
-
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .preview-count {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--header-bg-start);
-        }
-
-        .preview-question {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .preview-question-num {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .preview-question-text {
-            font-size: 0.95rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .preview-option {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            padding: 0.15rem 0 0.15rem 1rem;
+        body.dark-mode .flashcard-right {
+            /* Make answer text more readable in dark mode */
+            color: var(--text-primary);
         }
 
         /* ============================================
@@ -700,6 +675,19 @@
             justify-content: center;
             gap: 1rem;
             margin-top: 1rem;
+            /* Make the navigation sticky to the bottom of the viewport on scroll */
+            position: sticky;
+            bottom: 0;
+            /* Add a background and padding to create a solid footer bar */
+            background: var(--bg-secondary);
+            padding: 1rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Submit answer button */
+        .submit-answer-area {
+            text-align: center;
+            margin-top: 1rem;
         }
 
         /* Feedback */
@@ -750,6 +738,180 @@
         .star-btn:hover {
             transform: scale(1.15);
             opacity: 0.7;
+        }
+
+        /* ============================================
+           FLASHCARD STUDY MODE (Quizlet-style)
+           ============================================ */
+        .fc-wrapper {
+            perspective: 1000px;
+        }
+
+        .fc-card {
+            background: linear-gradient(145deg, #2a4a5a, #1a3a4a);
+            border-radius: 16px;
+            min-height: 420px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            transition: box-shadow 0.3s;
+        }
+
+        body.dark-mode .fc-card {
+            background: linear-gradient(145deg, #1e3a4a, #152e3e);
+        }
+
+        .fc-card:hover {
+            box-shadow: 0 6px 28px rgba(0,0,0,0.35);
+        }
+
+        .fc-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem 0;
+        }
+
+        .fc-card-header .star-btn {
+            color: rgba(255,255,255,0.5);
+            font-size: 1.4rem;
+        }
+
+        .fc-card-header .star-btn.starred {
+            color: #f9a825;
+            opacity: 1;
+        }
+
+        .fc-card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem 2.5rem;
+            color: #e8f0e0;
+        }
+
+        .fc-question-text {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .fc-options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .fc-option-item {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            color: rgba(232,240,224,0.85);
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+        }
+
+        .fc-option-item::before {
+            content: '\2022';
+            margin-right: 0.4rem;
+            font-size: 1.2rem;
+        }
+
+        /* Answer side (back of card) */
+        .fc-answer-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 2.5rem;
+            color: #e8f0e0;
+            text-align: center;
+        }
+
+        .fc-answer-text {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.5;
+        }
+
+        .fc-explanation {
+            font-size: 1rem;
+            color: rgba(232,240,224,0.7);
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+
+        .fc-flip-bar {
+            background: linear-gradient(135deg, var(--header-bg-start), var(--header-bg-end));
+            color: white;
+            text-align: center;
+            padding: 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .fc-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.25rem;
+        }
+
+        .fc-nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .fc-nav-btn:hover:not(:disabled) {
+            border-color: var(--header-bg-start);
+            color: var(--header-bg-start);
+        }
+
+        .fc-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .fc-counter {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .fc-card {
+                min-height: 320px;
+            }
+            .fc-card-body, .fc-answer-body {
+                padding: 1.5rem;
+            }
+            .fc-question-text {
+                font-size: 1.05rem;
+            }
+            .fc-option-item {
+                font-size: 0.95rem;
+            }
         }
 
         /* ============================================
@@ -867,27 +1029,6 @@
         }
 
         /* ============================================
-           REVIEW TAB
-           ============================================ */
-        .review-controls {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .review-controls input[type="text"] {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .review-controls select {
-            width: auto;
-            min-width: 140px;
-        }
-
-        /* ============================================
            EMPTY STATE
            ============================================ */
         .empty-state {
@@ -969,6 +1110,48 @@
         }
 
         /* ============================================
+           REVIEW CONTROLS (used in Study Review mode)
+           ============================================ */
+        .review-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .review-controls input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .review-controls select {
+            width: auto;
+            min-width: 140px;
+        }
+
+        /* ============================================
+           TEST RESULTS
+           ============================================ */
+        .test-results {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .test-score {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .test-score.pass {
+            color: var(--correct-border);
+        }
+
+        .test-score.fail {
+            color: var(--incorrect-border);
+        }
+
+        /* ============================================
            RESPONSIVE
            ============================================ */
         @media (max-width: 768px) {
@@ -1005,10 +1188,19 @@
             .review-controls select {
                 width: 100%;
             }
+
+            .flashcard-item {
+                flex-direction: column;
+            }
+
+            .flashcard-left {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
         }
 
         /* ============================================
-           SET NAME INPUT MODAL
+           MODALS (Save Set, Delete Confirmation)
            ============================================ */
         .modal-overlay {
             display: none;
@@ -1038,32 +1230,17 @@
             font-size: 1.1rem;
         }
 
+        .modal p {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
         .modal-actions {
             display: flex;
             gap: 0.75rem;
             justify-content: flex-end;
             margin-top: 1.25rem;
-        }
-
-        /* ============================================
-           TEST RESULTS
-           ============================================ */
-        .test-results {
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .test-score {
-            font-size: 3rem;
-            font-weight: 700;
-        }
-
-        .test-score.pass {
-            color: var(--correct-border);
-        }
-
-        .test-score.fail {
-            color: var(--incorrect-border);
         }
     </style>
 </head>
@@ -1089,17 +1266,20 @@
          ============================================ -->
     <div class="tab-navigation">
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('import')">Import</button>
+            <button class="tab-btn active" onclick="switchTab('import')">Home</button>
             <button class="tab-btn" onclick="switchTab('study')">Study</button>
             <button class="tab-btn" onclick="switchTab('progress')">Progress</button>
-            <button class="tab-btn" onclick="switchTab('review')">Review</button>
         </div>
     </div>
 
     <!-- ============================================
-         IMPORT TAB
+         HOME TAB (was Import)
          ============================================ -->
     <div class="tab-content active" id="importTab">
+        <div style="margin-bottom: 1rem;">
+            <input type="text" id="homeSearchInput" placeholder="Search saved sets..." oninput="filterHomeSets()">
+        </div>
+
         <!-- Existing sets -->
         <div id="importSetsArea"></div>
 
@@ -1108,7 +1288,6 @@
             <div class="import-methods">
                 <button class="method-btn active" onclick="switchImportMethod('paste')">Paste Text</button>
                 <button class="method-btn" onclick="switchImportMethod('pdf')">Upload PDF</button>
-                <button class="method-btn" onclick="switchImportMethod('gdocs')">Google Docs</button>
             </div>
 
             <!-- Paste Text Method -->
@@ -1132,25 +1311,31 @@
                 <input type="file" id="pdfInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)">
                 <div id="pdfStatus" style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-secondary);"></div>
             </div>
-
-            <!-- Google Docs Method -->
-            <div class="import-method" id="gdocsMethod">
-                <div id="gdocsContent"></div>
-            </div>
         </div>
 
-        <!-- Preview area -->
+        <!-- Extracted questions preview (Quizlet-style) -->
         <div id="previewArea" style="display: none;">
             <div class="panel">
-                <div class="preview-header">
-                    <div class="panel-title">Extracted Questions</div>
-                    <span class="preview-count" id="previewCount"></span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div class="panel-title" style="margin-bottom: 0;">Extracted Questions</div>
+                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--header-bg-start);" id="previewCount"></span>
                 </div>
                 <div id="previewQuestions"></div>
                 <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
                     <button class="btn-primary" onclick="saveQuestionSet()">Save Question Set</button>
                     <button class="btn-secondary" onclick="clearPreview()">Discard</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Saved set questions viewer -->
+        <div id="savedSetViewer" style="display: none;">
+            <div class="panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div class="panel-title" style="margin-bottom: 0;" id="savedSetTitle">Questions</div>
+                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--header-bg-start);" id="savedSetCount"></span>
+                </div>
+                <div id="savedSetQuestions"></div>
             </div>
         </div>
     </div>
@@ -1164,7 +1349,7 @@
         <div id="studyNoSets" class="empty-state">
             <div class="empty-state-icon">&#128218;</div>
             <div class="empty-state-title">No question sets yet</div>
-            <div class="empty-state-text">Import questions from the Import tab to start studying.</div>
+            <div class="empty-state-text">Import questions from the Home tab to start studying.</div>
         </div>
 
         <div id="studyActive" style="display: none;">
@@ -1172,6 +1357,7 @@
                 <button class="mode-btn active" onclick="switchStudyMode('learn')">Learn</button>
                 <button class="mode-btn" onclick="switchStudyMode('test')">Test</button>
                 <button class="mode-btn" onclick="switchStudyMode('review')">Review</button>
+                <button class="mode-btn" onclick="switchStudyMode('flashcards')">Flashcards</button>
             </div>
 
             <!-- Session progress -->
@@ -1267,26 +1453,6 @@
     </div>
 
     <!-- ============================================
-         REVIEW TAB
-         ============================================ -->
-    <div class="tab-content" id="reviewTab">
-        <div id="reviewSetsArea"></div>
-
-        <div class="review-controls">
-            <input type="text" id="reviewSearch" placeholder="Search questions..." oninput="renderReview()">
-            <select id="reviewFilter" onchange="renderReview()">
-                <option value="all">All Questions</option>
-                <option value="starred">Starred Only</option>
-                <option value="wrong">Frequently Wrong</option>
-                <option value="unseen">Not Yet Studied</option>
-                <option value="mastered">Mastered</option>
-            </select>
-        </div>
-
-        <div id="reviewContent"></div>
-    </div>
-
-    <!-- ============================================
          SAVE MODAL
          ============================================ -->
     <div class="modal-overlay" id="saveModal">
@@ -1296,7 +1462,35 @@
             <input type="text" id="setNameInput" placeholder="e.g., Midterm Review Ch. 5">
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="closeSaveModal()">Cancel</button>
-                <button class="btn-primary" onclick="confirmSave()">Save</button>
+                <button class="btn-primary" id="confirmSaveBtn" onclick="confirmSave()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         DELETE CONFIRMATION MODAL
+         ============================================ -->
+    <div class="modal-overlay" id="deleteConfirmModal">
+        <div class="modal">
+            <h3>Confirm Deletion</h3>
+            <p id="deleteConfirmText"></p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         CLEAR PROGRESS CONFIRMATION MODAL
+         ============================================ -->
+    <div class="modal-overlay" id="clearProgressConfirmModal">
+        <div class="modal">
+            <h3>Confirm Action</h3>
+            <p>This will reset ALL progress for ALL question sets, including mastery levels, accuracy, and streaks. This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeClearProgressModal()">Cancel</button>
+                <button class="btn-danger" onclick="confirmClearAllProgress()">Clear All Progress</button>
             </div>
         </div>
     </div>
@@ -1310,6 +1504,7 @@
         // ============================================
 
         const STORAGE_KEY = 'mcStudyTool';
+        const PARSED_KEY = 'mcStudyTool_parsed';
 
         let appState = {
             questionSets: {},
@@ -1320,15 +1515,21 @@
         };
 
         let sessionState = {
+            setId: null,
             currentIndex: 0,
             questionOrder: [],
             sessionCorrect: 0,
             sessionWrong: 0,
             testAnswers: {},
-            currentMode: 'learn'
+            currentMode: 'learn',
+            learnAnswers: {} // track selected/submitted answers per question index
         };
 
+        let learnSessionCache = {};
+
         let parsedQuestions = []; // Temp storage for preview before save
+
+        let setIdToDelete = null;
 
         // ============================================
         // PERSISTENCE
@@ -1360,6 +1561,25 @@
             }
         }
 
+        function saveParsedQuestions() {
+            try {
+                localStorage.setItem(PARSED_KEY, JSON.stringify(parsedQuestions));
+            } catch (e) {
+                console.error('Save parsed failed:', e);
+            }
+        }
+
+        function loadParsedQuestions() {
+            try {
+                const saved = localStorage.getItem(PARSED_KEY);
+                if (saved) {
+                    parsedQuestions = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('Load parsed failed:', e);
+            }
+        }
+
         // ============================================
         // THEME
         // ============================================
@@ -1380,24 +1600,45 @@
 
             document.getElementById(tabName + 'Tab').classList.add('active');
             const btns = document.querySelectorAll('.tab-btn');
-            const tabOrder = ['import', 'study', 'progress', 'review'];
+            const tabOrder = ['import', 'study', 'progress'];
             const idx = tabOrder.indexOf(tabName);
             if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
 
             // Refresh tab content
             if (tabName === 'study') loadStudyTab();
             if (tabName === 'progress') loadProgressTab();
-            if (tabName === 'review') loadReviewTab();
             if (tabName === 'import') loadImportTab();
         }
 
         // ============================================
-        // IMPORT TAB
+        // HOME (IMPORT) TAB
         // ============================================
 
         function loadImportTab() {
-            renderSetSelector('importSetsArea', false);
-            checkGoogleStatus();
+            renderSetSelector('importSetsArea', true);
+            filterHomeSets();
+
+            // Show persisted parsed questions if they exist
+            if (parsedQuestions.length > 0) {
+                showPreview(parsedQuestions);
+            }
+
+            // Show active set questions in Quizlet-style viewer
+            renderSavedSetViewer();
+        }
+
+        function filterHomeSets() {
+            const input = document.getElementById('homeSearchInput');
+            if (!input) return;
+            const filter = input.value.toLowerCase();
+            const chips = document.querySelectorAll('#importSetsArea .set-chip');
+            chips.forEach(chip => {
+                if (chip.textContent.toLowerCase().includes(filter)) {
+                    chip.style.display = '';
+                } else {
+                    chip.style.display = 'none';
+                }
+            });
         }
 
         function switchImportMethod(method) {
@@ -1405,7 +1646,7 @@
             document.querySelectorAll('.method-btn').forEach(el => el.classList.remove('active'));
 
             document.getElementById(method + 'Method').classList.add('active');
-            const methods = ['paste', 'pdf', 'gdocs'];
+            const methods = ['paste', 'pdf'];
             const btns = document.querySelectorAll('.method-btn');
             const idx = methods.indexOf(method);
             if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
@@ -1418,8 +1659,6 @@
 
             if (source === 'paste') {
                 text = document.getElementById('pasteInput').value.trim();
-            } else if (source === 'gdocs') {
-                text = window._gdocsExtractedText || '';
             } else if (source === 'pdf') {
                 text = window._pdfExtractedText || '';
             }
@@ -1446,6 +1685,7 @@
 
                 if (data.questions && data.questions.length > 0) {
                     parsedQuestions = data.questions;
+                    saveParsedQuestions();
                     showPreview(data.questions);
                     showNotification(`Found ${data.questions.length} multiple choice questions`);
                 } else if (data.error) {
@@ -1472,26 +1712,44 @@
 
             let html = '';
             questions.forEach((q, i) => {
-                html += `<div class="preview-question">
-                    <div class="preview-question-num">Question ${q.number || (i + 1)}</div>
-                    <div class="preview-question-text">${escapeHtml(q.question)}</div>`;
+                const answerText = getAnswerText(q);
+                html += `<div class="flashcard-item">
+                    <div class="flashcard-left">
+                        <div class="flashcard-q-num"><strong>Question ${q.number || (i + 1)}</strong></div>
+                        <div class="flashcard-q-text">${escapeHtml(q.question)}</div>
+                        <div class="flashcard-options-list">`;
                 (q.options || []).forEach(opt => {
-                    html += `<div class="preview-option">${opt.letter}. ${escapeHtml(opt.text)}</div>`;
+                    html += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
                 });
-                if (q.correctAnswer) {
-                    html += `<div style="margin-top: 0.4rem; font-size: 0.8rem; color: var(--correct-border); font-weight: 600;">Answer: ${q.correctAnswer}</div>`;
-                }
-                html += '</div>';
+                html += `</div>
+                    </div>
+                    <div class="flashcard-right">
+                        <div>${answerText ? escapeHtml(answerText) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}</div>
+                    </div>
+                </div>`;
             });
 
             listEl.innerHTML = html;
             area.style.display = 'block';
-            area.scrollIntoView({ behavior: 'smooth' });
+
+            // Hide saved set viewer when showing preview
+            document.getElementById('savedSetViewer').style.display = 'none';
+        }
+
+        function getAnswerText(q) {
+            if (!q.correctAnswer) return null;
+            const correctOpt = (q.options || []).find(o => o.letter.toUpperCase() === q.correctAnswer.toUpperCase());
+            if (correctOpt) {
+                return `${correctOpt.letter}. ${correctOpt.text}`;
+            }
+            return q.correctAnswer;
         }
 
         function clearPreview() {
             parsedQuestions = [];
+            localStorage.removeItem(PARSED_KEY);
             document.getElementById('previewArea').style.display = 'none';
+            renderSavedSetViewer();
         }
 
         function saveQuestionSet() {
@@ -1512,24 +1770,77 @@
                 return;
             }
 
-            const setId = 'set_' + Date.now();
-            appState.questionSets[setId] = {
-                name,
-                createdAt: Date.now(),
-                questions: parsedQuestions.map((q, i) => ({
-                    ...q,
-                    id: q.id || ('q' + (q.number || i))
-                })),
-                progress: {}
-            };
-            appState.activeSetId = setId;
+            const btn = document.getElementById('confirmSaveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Saving...';
 
-            saveState();
-            closeSaveModal();
-            clearPreview();
-            document.getElementById('pasteInput').value = '';
-            showNotification(`Saved "${name}" with ${parsedQuestions.length} questions`);
-            loadImportTab();
+            // Use a setTimeout to allow the UI to update before blocking operations
+            setTimeout(() => {
+                try {
+                    const setId = 'set_' + Date.now();
+                    appState.questionSets[setId] = {
+                        name,
+                        createdAt: Date.now(),
+                        questions: parsedQuestions.map((q, i) => ({ ...q, id: q.id || ('q' + (q.number || i)) })),
+                        progress: {}
+                    };
+                    appState.activeSetId = setId;
+
+                    saveState();
+                    closeSaveModal();
+                    clearPreview();
+                    document.getElementById('pasteInput').value = '';
+                    showNotification(`Saved "${name}" with ${parsedQuestions.length} questions`);
+                    loadImportTab();
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Save';
+                }
+            }, 10);
+        }
+
+        // ---- Saved Set Viewer (Quizlet-style on Home tab) ----
+
+        function renderSavedSetViewer() {
+            const viewer = document.getElementById('savedSetViewer');
+            const set = appState.questionSets[appState.activeSetId];
+
+            // Don't show if there's an active preview
+            if (parsedQuestions.length > 0) {
+                viewer.style.display = 'none';
+                return;
+            }
+
+            if (!set || set.questions.length === 0) {
+                viewer.style.display = 'none';
+                return;
+            }
+
+            document.getElementById('savedSetTitle').textContent = set.name;
+            document.getElementById('savedSetCount').textContent =
+                `${set.questions.length} question${set.questions.length !== 1 ? 's' : ''}`;
+
+            let html = '';
+            set.questions.forEach((q, i) => {
+                const answerText = getAnswerText(q);
+                html += `<div class="flashcard-item">
+                    <div class="flashcard-left">
+                        <div class="flashcard-q-num"><strong>Question ${q.number || (i + 1)}</strong></div>
+                        <div class="flashcard-q-text">${escapeHtml(q.question)}</div>
+                        <div class="flashcard-options-list">`;
+                (q.options || []).forEach(opt => {
+                    html += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
+                });
+                html += `</div>
+                    </div>
+                    <div class="flashcard-right">
+                        <div>${answerText ? escapeHtml(answerText) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}</div>
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById('savedSetQuestions').innerHTML = html;
+            viewer.style.display = 'block';
         }
 
         // ---- PDF Upload ----
@@ -1567,132 +1878,42 @@
         async function uploadPdf(file) {
             const status = document.getElementById('pdfStatus');
             status.innerHTML = '<span class="spinner dark"></span> Uploading and extracting text...';
-
+ 
             const formData = new FormData();
             formData.append('pdf', file);
-
+ 
             try {
                 const res = await fetch('/api/upload-pdf', {
                     method: 'POST',
                     body: formData
                 });
-
+ 
+                // Check if the server responded with an error status
+                if (!res.ok) {
+                    let errorMsg = `Server responded with ${res.status}: ${res.statusText}`;
+                    try {
+                        // Try to get a more specific error from the response body
+                        const errorData = await res.json();
+                        errorMsg = errorData.error || errorMsg;
+                    } catch (e) {
+                        // Response was not JSON, do nothing and use the status text
+                    }
+                    throw new Error(errorMsg);
+                }
+ 
                 const data = await res.json();
-
+ 
                 if (data.text) {
                     window._pdfExtractedText = data.text;
                     status.innerHTML = `Extracted text from ${data.pages} page${data.pages !== 1 ? 's' : ''}. ` +
                         `<button class="btn-primary" style="margin-left: 0.5rem; padding: 0.4rem 1rem; font-size: 0.85rem;" ` +
                         `onclick="parseQuestions('pdf')">Extract Questions</button>`;
                 } else {
-                    status.textContent = 'Error: ' + (data.error || 'Failed to extract text');
+                    throw new Error(data.error || 'Failed to extract text from PDF');
                 }
             } catch (err) {
                 status.textContent = 'Upload failed: ' + err.message;
             }
-        }
-
-        // ---- Google Docs ----
-
-        async function checkGoogleStatus() {
-            const container = document.getElementById('gdocsContent');
-            try {
-                const res = await fetch('/auth/google/status');
-                const data = await res.json();
-
-                if (!data.enabled) {
-                    container.innerHTML = `<div class="info-box">Google Docs integration is not configured. Add Google OAuth credentials to .env to enable.</div>`;
-                } else if (!data.authenticated) {
-                    container.innerHTML = `
-                        <div class="info-box">Connect your Google account to import questions directly from Google Docs.</div>
-                        <button class="btn-primary" onclick="window.location.href='/auth/google'">Connect Google Account</button>`;
-                } else {
-                    container.innerHTML = `
-                        <div class="gdocs-search">
-                            <input type="text" id="gdocsSearchInput" placeholder="Search your documents..." onkeydown="if(event.key==='Enter')searchGDocs()">
-                            <button class="btn-primary" onclick="searchGDocs()">Search</button>
-                            <button class="btn-secondary" onclick="searchGDocs('')">Recent</button>
-                        </div>
-                        <div id="gdocsDocList"></div>
-                        <div id="gdocsDocViewer" style="display:none;"></div>
-                        <div style="margin-top: 1rem;">
-                            <button class="btn-secondary" onclick="disconnectGoogle()" style="font-size: 0.8rem; opacity: 0.7;">
-                                Disconnect Google Account
-                            </button>
-                        </div>`;
-                }
-            } catch {
-                container.innerHTML = '<div class="info-box">Could not check Google status.</div>';
-            }
-        }
-
-        async function searchGDocs(query) {
-            const q = query !== undefined ? query : (document.getElementById('gdocsSearchInput')?.value || '');
-            const list = document.getElementById('gdocsDocList');
-            list.innerHTML = '<span class="spinner dark"></span> Searching...';
-
-            try {
-                const res = await fetch(`/api/gdocs/search?q=${encodeURIComponent(q)}`);
-                const data = await res.json();
-
-                if (data.error) {
-                    list.innerHTML = `<div class="info-box">${data.error}</div>`;
-                    return;
-                }
-
-                if (!data.files || data.files.length === 0) {
-                    list.innerHTML = '<div style="padding: 1rem; color: var(--text-secondary);">No documents found.</div>';
-                    return;
-                }
-
-                let html = '<div class="doc-list">';
-                data.files.forEach(file => {
-                    const date = new Date(file.modifiedTime).toLocaleDateString();
-                    html += `<div class="doc-item" onclick="selectGDoc('${file.id}', '${escapeHtml(file.name)}')">
-                        <span class="doc-item-name">${escapeHtml(file.name)}</span>
-                        <span class="doc-item-date">${date}</span>
-                    </div>`;
-                });
-                html += '</div>';
-                list.innerHTML = html;
-            } catch (err) {
-                list.innerHTML = `<div class="info-box">Search failed: ${err.message}</div>`;
-            }
-        }
-
-        async function selectGDoc(docId, docName) {
-            const viewer = document.getElementById('gdocsDocViewer');
-            viewer.style.display = 'block';
-            viewer.innerHTML = '<span class="spinner dark"></span> Loading document...';
-
-            try {
-                const res = await fetch(`/api/gdocs/${docId}`);
-                const data = await res.json();
-
-                if (data.error) {
-                    viewer.innerHTML = `<div class="info-box">${data.error}</div>`;
-                    return;
-                }
-
-                window._gdocsExtractedText = data.text;
-                viewer.innerHTML = `
-                    <div class="panel" style="margin-top: 1rem;">
-                        <div class="panel-title">${escapeHtml(data.title)}</div>
-                        <div style="max-height: 300px; overflow-y: auto; font-size: 0.85rem; color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                            ${data.html || escapeHtml(data.text).substring(0, 2000)}
-                        </div>
-                        <button class="btn-primary" onclick="parseQuestions('gdocs')">Extract Questions</button>
-                    </div>`;
-            } catch (err) {
-                viewer.innerHTML = `<div class="info-box">Failed to load: ${err.message}</div>`;
-            }
-        }
-
-        async function disconnectGoogle() {
-            if (!confirm('Disconnect your Google account?')) return;
-            await fetch('/auth/google/disconnect', { method: 'POST' });
-            checkGoogleStatus();
-            showNotification('Google account disconnected');
         }
 
         // ============================================
@@ -1736,18 +1957,26 @@
             }
         }
 
-        function deleteSet(setId) {
-            const set = appState.questionSets[setId];
-            if (!set) return;
-            if (!confirm(`Delete "${set.name}"? This cannot be undone.`)) return;
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').classList.remove('active');
+            setIdToDelete = null;
+        }
 
-            delete appState.questionSets[setId];
-            if (appState.activeSetId === setId) {
+        function confirmDelete() {
+            if (!setIdToDelete) return;
+
+            const set = appState.questionSets[setIdToDelete];
+            if (!set) return;
+
+            delete appState.questionSets[setIdToDelete];
+            if (appState.activeSetId === setIdToDelete) {
                 const remaining = Object.keys(appState.questionSets);
                 appState.activeSetId = remaining.length > 0 ? remaining[0] : null;
             }
             saveState();
             showNotification(`Deleted "${set.name}"`);
+
+            closeDeleteModal();
 
             const activeTab = document.querySelector('.tab-content.active');
             if (activeTab) {
@@ -1756,6 +1985,15 @@
             }
         }
 
+        function deleteSet(setId) {
+            const set = appState.questionSets[setId];
+            if (!set) return;
+            setIdToDelete = setId;
+            const modal = document.getElementById('deleteConfirmModal');
+            const textEl = document.getElementById('deleteConfirmText');
+            textEl.innerHTML = `Are you sure you want to delete the set "<strong>${escapeHtml(set.name)}</strong>"? This action cannot be undone.`;
+            modal.classList.add('active');
+        }
         // ============================================
         // STUDY TAB
         // ============================================
@@ -1778,13 +2016,18 @@
                 saveState();
             }
 
+            // Resume existing session if set hasn't changed
+            if (sessionState.setId === appState.activeSetId) {
+                return;
+            }
+
             startStudySession();
         }
 
         function switchStudyMode(mode) {
             sessionState.currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
-            const modes = ['learn', 'test', 'review'];
+            const modes = ['learn', 'test', 'review', 'flashcards'];
             const btns = document.querySelectorAll('.mode-btn');
             const idx = modes.indexOf(mode);
             if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
@@ -1800,18 +2043,35 @@
                 return;
             }
 
+            // Check cache for Learn mode persistence
+            if (sessionState.currentMode === 'learn' && learnSessionCache[appState.activeSetId]) {
+                sessionState = JSON.parse(JSON.stringify(learnSessionCache[appState.activeSetId]));
+                showLearnSummary();
+                return;
+            }
+
             // Reset session
+            sessionState.setId = appState.activeSetId;
             sessionState.sessionCorrect = 0;
             sessionState.sessionWrong = 0;
             sessionState.testAnswers = {};
+            sessionState.learnAnswers = {};
+            sessionState.isFinished = false;
 
             if (sessionState.currentMode === 'learn') {
                 startLearnMode(set);
             } else if (sessionState.currentMode === 'test') {
                 startTestMode(set);
+            } else if (sessionState.currentMode === 'flashcards') {
+                startFlashcardMode(set);
             } else {
                 startReviewMode(set);
             }
+        }
+
+        function continueStudying() {
+            delete learnSessionCache[appState.activeSetId];
+            startStudySession();
         }
 
         // ---- Learn Mode ----
@@ -1832,6 +2092,7 @@
             });
 
             sessionState.currentIndex = 0;
+            sessionState.learnAnswers = {};
 
             document.getElementById('sessionProgress').style.display = 'block';
             document.getElementById('studyNav').style.display = 'flex';
@@ -1849,6 +2110,8 @@
             const q = set.questions[qIdx];
             const prog = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
             const total = sessionState.questionOrder.length;
+            const answer = sessionState.learnAnswers[sessionState.currentIndex];
+            const isSubmitted = answer && answer.submitted;
 
             // Update progress bar
             document.getElementById('sessionProgressText').textContent =
@@ -1861,7 +2124,7 @@
             let html = `<div class="question-card" id="currentCard">
                 <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div class="question-number">
-                        Question ${q.number || (qIdx + 1)}
+                        <strong>Question ${q.number || (qIdx + 1)}</strong>
                         <span class="mastery-badge mastery-${prog.mastery}">${prog.mastery}</span>
                     </div>
                     <button class="star-btn ${prog.starred ? 'starred' : ''}"
@@ -1873,54 +2136,95 @@
                 <div class="mc-options" id="optionsContainer">`;
 
             q.options.forEach(opt => {
-                html += `<div class="mc-option" onclick="selectLearnAnswer('${escapeAttr(opt.letter)}', '${escapeAttr(q.id)}')"
-                             id="option_${opt.letter}">
+                let classes = 'mc-option';
+                if (isSubmitted) {
+                    classes += ' disabled';
+                    if (q.correctAnswer && q.correctAnswer.toUpperCase() === opt.letter.toUpperCase()) {
+                        classes += ' correct-answer';
+                    }
+                    if (answer.selected === opt.letter && q.correctAnswer &&
+                        answer.selected.toUpperCase() !== q.correctAnswer.toUpperCase()) {
+                        classes += ' wrong-answer';
+                    }
+                    if (!q.correctAnswer && answer.selected === opt.letter) {
+                        classes += ' selected';
+                    }
+                } else if (answer && answer.selected === opt.letter) {
+                    classes += ' selected';
+                }
+
+                const clickHandler = isSubmitted ? '' :
+                    `onclick="selectLearnOption('${escapeAttr(opt.letter)}')"`;
+
+                html += `<div class="${classes}" ${clickHandler} id="option_${opt.letter}">
                     <div class="option-letter">${escapeHtml(opt.letter)}</div>
                     <div class="option-text">${escapeHtml(opt.text)}</div>
                 </div>`;
             });
 
-            html += `</div>
-                <div id="feedbackArea"></div>
-            </div>`;
+            html += '</div>';
+
+            // Submit button (shown when an option is selected but not yet submitted)
+            if (answer && answer.selected && !isSubmitted) {
+                html += `<div class="submit-answer-area">
+                    <button class="btn-primary" onclick="submitLearnAnswer()" style="margin-top: 1rem; padding: 0.65rem 2rem;">
+                        Submit Answer
+                    </button>
+                </div>`;
+            }
+
+            // Feedback (shown after submission)
+            if (isSubmitted) {
+                html += renderLearnFeedback(q, answer);
+            }
+
+            html += '</div>';
 
             document.getElementById('studyArea').innerHTML = html;
 
             document.getElementById('prevBtn').disabled = sessionState.currentIndex === 0;
-            document.getElementById('nextBtn').disabled = sessionState.currentIndex >= total - 1;
+            
+            const nextBtn = document.getElementById('nextBtn');
+            if (sessionState.currentIndex >= total - 1) {
+                nextBtn.textContent = 'Finish';
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.disabled = false;
+            }
         }
 
-        function selectLearnAnswer(selectedLetter, questionId) {
+        function selectLearnOption(letter) {
+            if (!sessionState.learnAnswers[sessionState.currentIndex]) {
+                sessionState.learnAnswers[sessionState.currentIndex] = { selected: null, submitted: false };
+            }
+
+            // If already submitted, ignore
+            if (sessionState.learnAnswers[sessionState.currentIndex].submitted) return;
+
+            sessionState.learnAnswers[sessionState.currentIndex].selected = letter;
+            renderLearnQuestion();
+        }
+
+        function submitLearnAnswer() {
+            const answer = sessionState.learnAnswers[sessionState.currentIndex];
+            if (!answer || !answer.selected || answer.submitted) return;
+
+            answer.submitted = true;
+
             const set = appState.questionSets[appState.activeSetId];
-            const q = set.questions.find(q => q.id === questionId);
-            if (!q) return;
+            const qIdx = sessionState.questionOrder[sessionState.currentIndex];
+            const q = set.questions[qIdx];
 
-            // Disable all options
-            document.querySelectorAll('.mc-option').forEach(el => {
-                el.classList.add('disabled');
-                el.onclick = null;
-            });
-
-            const isCorrect = q.correctAnswer && selectedLetter.toUpperCase() === q.correctAnswer.toUpperCase();
-
-            // Highlight selected
-            const selectedEl = document.getElementById('option_' + selectedLetter);
-            if (selectedEl) {
-                selectedEl.classList.add(isCorrect ? 'correct-answer' : 'wrong-answer');
-            }
-
-            // Highlight correct answer if wrong
-            if (!isCorrect && q.correctAnswer) {
-                const correctEl = document.getElementById('option_' + q.correctAnswer);
-                if (correctEl) correctEl.classList.add('correct-answer');
-            }
+            const isCorrect = q.correctAnswer &&
+                answer.selected.toUpperCase() === q.correctAnswer.toUpperCase();
 
             // Update progress
-            if (!set.progress[questionId]) {
-                set.progress[questionId] = { correct: 0, wrong: 0, lastSeen: null, starred: false, mastery: 'new' };
+            if (!set.progress[q.id]) {
+                set.progress[q.id] = { correct: 0, wrong: 0, lastSeen: null, starred: false, mastery: 'new' };
             }
 
-            const prog = set.progress[questionId];
+            const prog = set.progress[q.id];
             prog.lastSeen = Date.now();
 
             if (q.correctAnswer) {
@@ -1940,34 +2244,28 @@
             }
 
             saveState();
+            renderLearnQuestion();
+        }
 
-            // Show feedback
-            const feedback = document.getElementById('feedbackArea');
+        function renderLearnFeedback(q, answer) {
+            if (!answer || !answer.submitted) return '';
+
+            const isCorrect = q.correctAnswer &&
+                answer.selected.toUpperCase() === q.correctAnswer.toUpperCase();
+
             if (q.correctAnswer) {
                 if (isCorrect) {
-                    feedback.innerHTML = `<div class="feedback correct">Correct!</div>`;
+                    return `<div class="feedback correct">Correct!</div>`;
                 } else {
-                    feedback.innerHTML = `<div class="feedback incorrect">
+                    return `<div class="feedback incorrect">
                         Incorrect. The correct answer is ${escapeHtml(q.correctAnswer)}.
                         ${q.explanation ? `<div class="explanation">${escapeHtml(q.explanation)}</div>` : ''}
                     </div>`;
                 }
             } else {
-                feedback.innerHTML = `<div class="feedback" style="background: var(--info-bg); border-color: var(--info-border); color: var(--text-primary);">
-                    You selected ${escapeHtml(selectedLetter)}. (No answer key available for this question)
+                return `<div class="feedback" style="background: var(--info-bg); border: 1px solid var(--info-border); color: var(--text-primary);">
+                    You selected ${escapeHtml(answer.selected)}. (No answer key available for this question)
                 </div>`;
-            }
-
-            document.getElementById('sessionScore').textContent =
-                `${sessionState.sessionCorrect} correct, ${sessionState.sessionWrong} wrong`;
-
-            // Auto advance on correct after delay
-            if (isCorrect) {
-                setTimeout(() => {
-                    if (sessionState.currentIndex < sessionState.questionOrder.length - 1) {
-                        nextQuestion();
-                    }
-                }, 1200);
             }
         }
 
@@ -1980,10 +2278,152 @@
             return 'learning';
         }
 
+        function showLearnSummary() {
+            sessionState.isFinished = true;
+            document.getElementById('sessionProgress').style.display = 'none';
+            document.getElementById('studyNav').style.display = 'none';
+            
+            // Cache the finished session state
+            learnSessionCache[appState.activeSetId] = JSON.parse(JSON.stringify(sessionState));
+            
+            const set = appState.questionSets[appState.activeSetId];
+            const totalQuestions = set.questions.length;
+            let masteredCount = 0;
+            
+            // Calculate total set progress (Mastered questions / Total questions)
+            Object.values(set.progress).forEach(p => {
+                if (p.mastery === 'mastered') masteredCount++;
+            });
+            const setProgress = totalQuestions > 0 ? Math.round((masteredCount / totalQuestions) * 100) : 0;
+            
+            // Round stats
+            const roundTotal = sessionState.questionOrder.length;
+            const roundCorrect = sessionState.sessionCorrect;
+            const roundWrong = sessionState.sessionWrong;
+            
+            // Group questions by mastery
+            const groups = {
+                stillLearning: [],
+                familiar: [],
+                mastered: []
+            };
+
+            sessionState.questionOrder.forEach((qIdx, i) => {
+                const q = set.questions[qIdx];
+                const p = set.progress[q.id];
+                const mastery = p.mastery || 'new';
+                const answer = sessionState.learnAnswers[i];
+                const isCorrect = answer && q.correctAnswer && answer.selected.toUpperCase() === q.correctAnswer.toUpperCase();
+                const item = { q, isCorrect };
+
+                if (mastery === 'mastered') groups.mastered.push(item);
+                else if (mastery === 'familiar') groups.familiar.push(item);
+                else groups.stillLearning.push(item);
+            });
+
+            const encouragingMessages = [
+                "Nice work, you’re crushing it!",
+                "You're doing great, keep it up!",
+                "Fantastic effort, you're on fire!",
+                "Way to go, you're mastering this!",
+                "Excellent progress, keep going!",
+                "You're unstoppable, great job!",
+                "Amazing work, you've got this!",
+                "Keep up the momentum, you're doing awesome!",
+                "Brilliant job, you're getting better every day!",
+                "Spectacular performance, keep pushing!"
+            ];
+            const randomMessage = encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)];
+
+            let html = `
+            <div class="learn-summary">
+                <div class="summary-header" style="font-size: 2rem; margin-bottom: 1.5rem; font-weight: 700;">${randomMessage}</div>
+                
+                <div class="session-progress" style="display: block; margin-bottom: 2rem; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+                    <div class="session-progress-header">
+                        <span>Total Set Progress</span>
+                        <span>${setProgress}% Mastered</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: ${setProgress}%"></div>
+                    </div>
+                </div>
+
+                <div class="summary-stats" style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 3rem;">
+                    <div class="stat-card" style="min-width: 160px; box-shadow: 0 4px 12px var(--panel-shadow);">
+                        <div class="stat-value" style="color: var(--correct-border); font-size: 2.5rem;">${roundCorrect}</div>
+                        <div class="summary-stat-label">Correct</div>
+                    </div>
+                    <div class="stat-card" style="min-width: 160px; box-shadow: 0 4px 12px var(--panel-shadow);">
+                        <div class="stat-value" style="color: var(--incorrect-border); font-size: 2.5rem;">${roundWrong}</div>
+                        <div class="summary-stat-label">Incorrect</div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 3rem;">
+                    <button class="btn-primary" onclick="continueStudying()" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
+                        Continue Studying
+                    </button>
+                </div>
+
+            `;
+            
+            const renderGroup = (title, items, badgeClass, badgeText) => {
+                if (items.length === 0) return '';
+                let groupHtml = `
+                <div style="max-width: 800px; margin: 0 auto 1rem auto; text-align: left;">
+                    <h3 style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+                        ${title} (${items.length})
+                        <span class="mastery-badge ${badgeClass}">${badgeText}</span>
+                    </h3>
+                </div>
+                <div class="summary-terms-list">`;
+                
+                items.forEach(({q, isCorrect}) => {
+                    const answerText = getAnswerText(q);
+                    const borderStyle = isCorrect ? 'border-left: 5px solid var(--correct-border);' : 'border-left: 5px solid var(--incorrect-border);';
+                    const statusColor = isCorrect ? 'var(--correct-border)' : 'var(--incorrect-border)';
+                    const statusIcon = isCorrect ? '\u2713' : '\u00D7';
+                    const statusText = isCorrect ? 'Correct' : 'Incorrect';
+
+                    groupHtml += `
+                        <div class="flashcard-item" style="${borderStyle}">
+                            <div class="flashcard-left">
+                                <div class="flashcard-q-num" style="display: flex; justify-content: space-between;">
+                                    <strong>Question ${q.number || ''}</strong>
+                                    <span style="color: ${statusColor}; font-weight: bold;">${statusText} ${statusIcon}</span>
+                                </div>
+                                <div class="flashcard-q-text">${escapeHtml(q.question)}</div>
+                                <div class="flashcard-options-list">`;
+                    (q.options || []).forEach(opt => {
+                        groupHtml += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
+                    });
+                    groupHtml += `</div>
+                            </div>
+                            <div class="flashcard-right">
+                                <div>${answerText ? escapeHtml(answerText) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}</div>
+                            </div>
+                        </div>`;
+                });
+                groupHtml += `</div>`;
+                return groupHtml;
+            };
+            
+            html += renderGroup('Still Learning', groups.stillLearning, 'mastery-learning', 'Learning');
+            html += renderGroup('Familiar', groups.familiar, 'mastery-familiar', 'Familiar');
+            html += renderGroup('Mastered', groups.mastered, 'mastery-mastered', 'Mastered');
+            
+            html += `</div>`;
+            
+            document.getElementById('studyArea').innerHTML = html;
+        }
+
         function nextQuestion() {
             if (sessionState.currentIndex < sessionState.questionOrder.length - 1) {
                 sessionState.currentIndex++;
                 renderLearnQuestion();
+            } else {
+                showLearnSummary();
             }
         }
 
@@ -2009,7 +2449,10 @@
             if (sessionState.currentMode === 'learn') {
                 renderLearnQuestion();
             } else if (sessionState.currentMode === 'review') {
-                startReviewMode(set);
+                const s = appState.questionSets[appState.activeSetId];
+                if (s) startReviewMode(s);
+            } else if (sessionState.currentMode === 'flashcards') {
+                renderFlashcard();
             }
         }
 
@@ -2032,7 +2475,7 @@
             let html = '';
             set.questions.forEach((q, i) => {
                 html += `<div class="question-card" id="testCard_${i}">
-                    <div class="question-number">Question ${q.number || (i + 1)}</div>
+                    <div class="question-number"><strong>Question ${q.number || (i + 1)}</strong></div>
                     <div class="question-text">${escapeHtml(q.question)}</div>
                     <div class="mc-options">`;
 
@@ -2159,146 +2602,25 @@
             document.getElementById('testSubmitArea').style.display = 'none';
             document.getElementById('testResults').style.display = 'none';
 
-            let html = '';
-            set.questions.forEach((q, i) => {
-                const prog = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
+            let html = `<div class="review-controls">
+                <input type="text" id="reviewSearch" placeholder="Search questions..." oninput="filterReviewMode()">
+                <select id="reviewFilter" onchange="filterReviewMode()">
+                    <option value="all">All Questions</option>
+                    <option value="starred">Starred Only</option>
+                    <option value="wrong">Frequently Wrong</option>
+                    <option value="unseen">Not Yet Studied</option>
+                    <option value="mastered">Mastered</option>
+                </select>
+            </div>
+            <div id="reviewModeContent"></div>`;
 
-                html += `<div class="question-card">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div class="question-number">
-                            Question ${q.number || (i + 1)}
-                            <span class="mastery-badge mastery-${prog.mastery}">${prog.mastery}</span>
-                        </div>
-                        <button class="star-btn ${prog.starred ? 'starred' : ''}"
-                                onclick="toggleStar('${escapeAttr(q.id)}')">
-                            ${prog.starred ? '\u2605' : '\u2606'}
-                        </button>
-                    </div>
-                    <div class="question-text">${escapeHtml(q.question)}</div>
-                    <div class="mc-options">`;
-
-                q.options.forEach(opt => {
-                    const isCorrect = q.correctAnswer && q.correctAnswer.toUpperCase() === opt.letter.toUpperCase();
-                    html += `<div class="mc-option${isCorrect ? ' correct-answer' : ''}" style="cursor: default;">
-                        <div class="option-letter">${escapeHtml(opt.letter)}</div>
-                        <div class="option-text">${escapeHtml(opt.text)}</div>
-                    </div>`;
-                });
-
-                html += '</div>';
-                if (q.explanation) {
-                    html += `<div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.75rem; padding: 0.5rem; background: var(--hover-bg); border-radius: 6px;">
-                        ${escapeHtml(q.explanation)}</div>`;
-                }
-                html += '</div>';
-            });
-
-            document.getElementById('studyArea').innerHTML = html || '<div class="empty-state"><div class="empty-state-title">No questions to review</div></div>';
+            document.getElementById('studyArea').innerHTML = html;
+            filterReviewMode();
         }
 
-        // ============================================
-        // PROGRESS TAB
-        // ============================================
-
-        function loadProgressTab() {
-            const sets = appState.questionSets;
-            const ids = Object.keys(sets);
-
-            let totalQuestions = 0;
-            let totalMastered = 0;
-            let totalCorrect = 0;
-            let totalWrong = 0;
-
-            ids.forEach(id => {
-                const set = sets[id];
-                totalQuestions += set.questions.length;
-                Object.values(set.progress).forEach(p => {
-                    if (p.mastery === 'mastered') totalMastered++;
-                    totalCorrect += (p.correct || 0);
-                    totalWrong += (p.wrong || 0);
-                });
-            });
-
-            const masteryPct = totalQuestions > 0 ? Math.round((totalMastered / totalQuestions) * 100) : 0;
-            const accuracy = (totalCorrect + totalWrong) > 0
-                ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0;
-
-            document.getElementById('statTotalQuestions').textContent = totalQuestions;
-            document.getElementById('statMastered').textContent = masteryPct + '%';
-            document.getElementById('statStreak').textContent = appState.bestStreak;
-            document.getElementById('statAccuracy').textContent = accuracy + '%';
-            document.getElementById('masteryPercent').textContent = masteryPct + '%';
-            document.getElementById('masteryBar').style.width = masteryPct + '%';
-
-            renderSetSelector('progressSetsArea', false);
-            renderProgressTable();
-        }
-
-        function renderProgressTable() {
-            const tbody = document.getElementById('progressTableBody');
+        function filterReviewMode() {
             const set = appState.questionSets[appState.activeSetId];
-
-            if (!set) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No question set selected.</td></tr>';
-                return;
-            }
-
-            let html = '';
-            set.questions.forEach((q, i) => {
-                const p = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
-
-                html += `<tr>
-                    <td style="text-align: center; font-weight: 600;">${q.number || (i + 1)}</td>
-                    <td style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        ${escapeHtml(q.question.substring(0, 80))}${q.question.length > 80 ? '...' : ''}</td>
-                    <td style="text-align: center; color: var(--correct-border); font-weight: 600;">${p.correct || 0}</td>
-                    <td style="text-align: center; color: var(--incorrect-border); font-weight: 600;">${p.wrong || 0}</td>
-                    <td style="text-align: center;"><span class="mastery-badge mastery-${p.mastery}">${p.mastery}</span></td>
-                    <td style="text-align: center;">${p.starred ? '\u2605' : '-'}</td>
-                </tr>`;
-            });
-
-            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No questions.</td></tr>';
-        }
-
-        function clearAllProgress() {
-            if (!confirm('This will reset ALL progress for ALL question sets. Are you sure?')) return;
-
-            Object.values(appState.questionSets).forEach(set => {
-                Object.keys(set.progress).forEach(qId => {
-                    set.progress[qId] = {
-                        correct: 0,
-                        wrong: 0,
-                        lastSeen: null,
-                        starred: set.progress[qId]?.starred || false,
-                        mastery: 'new'
-                    };
-                });
-            });
-            appState.currentStreak = 0;
-            appState.bestStreak = 0;
-            saveState();
-            loadProgressTab();
-            showNotification('All progress cleared');
-        }
-
-        // ============================================
-        // REVIEW TAB
-        // ============================================
-
-        function loadReviewTab() {
-            renderSetSelector('reviewSetsArea', false);
-            renderReview();
-        }
-
-        function renderReview() {
-            const content = document.getElementById('reviewContent');
-            const set = appState.questionSets[appState.activeSetId];
-
-            if (!set) {
-                content.innerHTML = '<div class="empty-state"><div class="empty-state-title">No question set selected</div><div class="empty-state-text">Import questions from the Import tab first.</div></div>';
-                return;
-            }
+            if (!set) return;
 
             const filter = document.getElementById('reviewFilter')?.value || 'all';
             const search = (document.getElementById('reviewSearch')?.value || '').toLowerCase();
@@ -2319,6 +2641,8 @@
                 return true;
             });
 
+            const content = document.getElementById('reviewModeContent');
+
             if (filtered.length === 0) {
                 content.innerHTML = '<div class="empty-state"><div class="empty-state-title">No questions match</div><div class="empty-state-text">Try a different filter or search term.</div></div>';
                 return;
@@ -2333,7 +2657,7 @@
                 html += `<div class="question-card">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div class="question-number">
-                            Question ${q.number || (i + 1)}
+                            <strong>Question ${q.number || (i + 1)}</strong>
                             <span class="mastery-badge mastery-${p.mastery}">${p.mastery}</span>
                         </div>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -2378,7 +2702,274 @@
 
             set.progress[questionId].starred = !set.progress[questionId].starred;
             saveState();
-            renderReview();
+            filterReviewMode();
+        }
+
+        // ---- Flashcard Mode ----
+
+        function startFlashcardMode(set) {
+            sessionState.questionOrder = set.questions.map((_, i) => i);
+            sessionState.currentIndex = 0;
+
+            // Hide default nav elements - flashcards use their own
+            document.getElementById('sessionProgress').style.display = 'none';
+            document.getElementById('studyNav').style.display = 'none';
+            document.getElementById('testSubmitArea').style.display = 'none';
+            document.getElementById('testResults').style.display = 'none';
+
+            renderFlashcard();
+        }
+
+        let flashcardRevealed = false;
+
+        function renderFlashcard() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+
+            const qIdx = sessionState.questionOrder[sessionState.currentIndex];
+            const q = set.questions[qIdx];
+            const prog = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
+            const total = sessionState.questionOrder.length;
+            flashcardRevealed = false;
+
+            let html = `<div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <button class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="shuffleFlashcards()">Shuffle</button>
+                <button class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="orderFlashcards()">Order</button>
+            </div>
+            <div class="fc-wrapper">
+                <div class="fc-card" onclick="toggleFlashcardAnswer()">
+                    <div class="fc-card-header">
+                        <span class="mastery-badge mastery-${prog.mastery}" style="font-size: 0.65rem;">${prog.mastery}</span>
+                        <button class="star-btn ${prog.starred ? 'starred' : ''}"
+                                onclick="event.stopPropagation(); toggleStar('${q.id}')">
+                            ${prog.starred ? '\u2605' : '\u2606'}
+                        </button>
+                    </div>
+                    <div class="fc-card-body" id="fcFront">
+                        <div class="fc-question-text">${escapeHtml(q.question)}</div>
+                        <div class="fc-options-list">`;
+
+            q.options.forEach(opt => {
+                html += `<div class="fc-option-item">${escapeHtml(opt.letter)}: ${escapeHtml(opt.text)}</div>`;
+            });
+
+            html += `</div>
+                    </div>
+                    <div class="fc-answer-body" id="fcBack" style="display: none;">
+                        <div class="fc-answer-text">${escapeHtml(getAnswerText(q) || 'No answer key')}</div>
+                        ${q.explanation ? `<div class="fc-explanation">${escapeHtml(q.explanation)}</div>` : ''}
+                    </div>
+                    <div class="fc-flip-bar" id="fcFlipBar">Click the card to flip</div>
+                </div>
+            </div>
+            <div class="fc-nav">
+                <button class="fc-nav-btn" onclick="prevFlashcard()" id="fcPrevBtn" ${sessionState.currentIndex === 0 ? 'disabled' : ''}>&larr;</button>
+                <span class="fc-counter">${sessionState.currentIndex + 1} / ${total}</span>
+                <button class="fc-nav-btn" onclick="nextFlashcard()" id="fcNextBtn" ${sessionState.currentIndex >= total - 1 ? 'disabled' : ''}>&rarr;</button>
+            </div>`;
+
+            document.getElementById('studyArea').innerHTML = html;
+        }
+
+        function toggleFlashcardAnswer() {
+            const front = document.getElementById('fcFront');
+            const back = document.getElementById('fcBack');
+            const bar = document.getElementById('fcFlipBar');
+            if (!front || !back) return;
+
+            flashcardRevealed = !flashcardRevealed;
+            front.style.display = flashcardRevealed ? 'none' : 'flex';
+            back.style.display = flashcardRevealed ? 'flex' : 'none';
+            if (bar) {
+                bar.textContent = flashcardRevealed
+                    ? 'Click the card to flip back'
+                    : 'Click the card to flip';
+            }
+        }
+
+        function prevFlashcard() {
+            if (sessionState.currentIndex > 0) {
+                sessionState.currentIndex--;
+                renderFlashcard();
+            }
+        }
+
+        function nextFlashcard() {
+            if (sessionState.currentIndex < sessionState.questionOrder.length - 1) {
+                sessionState.currentIndex++;
+                renderFlashcard();
+            }
+        }
+
+        function shuffleFlashcards() {
+            const array = sessionState.questionOrder;
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            sessionState.currentIndex = 0;
+            renderFlashcard();
+            showNotification('Flashcards shuffled');
+        }
+
+        function orderFlashcards() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+            sessionState.questionOrder = set.questions.map((_, i) => i);
+            sessionState.currentIndex = 0;
+            renderFlashcard();
+            showNotification('Flashcards ordered');
+        }
+
+        // ============================================
+        // PROGRESS TAB
+        // ============================================
+
+        function loadProgressTab() {
+            const sets = appState.questionSets;
+            const ids = Object.keys(sets);
+
+            let totalQuestions = 0;
+            let totalMastered = 0;
+            let totalCorrect = 0;
+            let totalWrong = 0;
+
+            ids.forEach(id => {
+                const set = sets[id];
+                totalQuestions += set.questions.length;
+                Object.values(set.progress).forEach(p => {
+                    if (p.mastery === 'mastered') totalMastered++;
+                    totalCorrect += (p.correct || 0);
+                    totalWrong += (p.wrong || 0);
+                });
+            });
+
+            const masteryPct = totalQuestions > 0 ? Math.round((totalMastered / totalQuestions) * 100) : 0;
+            const accuracy = (totalCorrect + totalWrong) > 0
+                ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0;
+
+            document.getElementById('statTotalQuestions').textContent = totalQuestions;
+            document.getElementById('statMastered').textContent = masteryPct + '%';
+            document.getElementById('statStreak').textContent = appState.bestStreak;
+            document.getElementById('statAccuracy').textContent = accuracy + '%';
+            document.getElementById('masteryPercent').textContent = masteryPct + '%';
+            document.getElementById('masteryBar').style.width = masteryPct + '%';
+
+            renderSetSelector('progressSetsArea', false);
+            renderProgressTable();
+        }
+
+        function renderProgressTable() {
+            const tbody = document.getElementById('progressTableBody');
+            const set = appState.questionSets[appState.activeSetId];
+            const exportBtn = document.getElementById('exportCsvBtn');
+
+            if (!set) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No question set selected.</td></tr>';
+                if (exportBtn) exportBtn.style.display = 'none';
+                return;
+            }
+
+            if (exportBtn) exportBtn.style.display = 'inline-block';
+
+            let html = '';
+            set.questions.forEach((q, i) => {
+                const p = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
+
+                html += `<tr>
+                    <td style="text-align: center; font-weight: 600;">${q.number || (i + 1)}</td>
+                    <td style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${escapeHtml(q.question.substring(0, 80))}${q.question.length > 80 ? '...' : ''}</td>
+                    <td style="text-align: center; color: var(--correct-border); font-weight: 600;">${p.correct || 0}</td>
+                    <td style="text-align: center; color: var(--incorrect-border); font-weight: 600;">${p.wrong || 0}</td>
+                    <td style="text-align: center;"><span class="mastery-badge mastery-${p.mastery}">${p.mastery}</span></td>
+                    <td style="text-align: center;">${p.starred ? '\u2605' : '-'}</td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No questions.</td></tr>';
+        }
+
+        function exportSetToCsv() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) {
+                showNotification('No set selected to export.');
+                return;
+            }
+
+            const headers = ['Number', 'Question', 'Correct Answer Letter', 'Explanation'];
+            const optionLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            let maxOptions = 0;
+            set.questions.forEach(q => {
+                if (q.options && q.options.length > maxOptions) {
+                    maxOptions = q.options.length;
+                }
+            });
+
+            for (let i = 0; i < maxOptions; i++) {
+                headers.push(`Option ${optionLetters[i]}`);
+            }
+
+            const rows = [headers];
+
+            set.questions.forEach(q => {
+                const rowData = [];
+                rowData.push(q.number || '');
+                rowData.push(q.question || '');
+                rowData.push(q.correctAnswer || '');
+                rowData.push(q.explanation || '');
+
+                const optionsMap = new Map();
+                if (q.options) {
+                    q.options.forEach(opt => optionsMap.set(opt.letter.toUpperCase(), opt.text));
+                }
+
+                for (let i = 0; i < maxOptions; i++) {
+                    rowData.push(optionsMap.get(optionLetters[i]) || '');
+                }
+                rows.push(rowData);
+            });
+
+            const csvContent = rows.map(row => row.map(escapeCsvCell).join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            const safeFilename = set.name.replace(/[^a-z0-9_.-]/gi, '_').toLowerCase();
+            link.setAttribute("download", `${safeFilename}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function confirmClearAllProgress() {
+            Object.values(appState.questionSets).forEach(set => {
+                Object.keys(set.progress).forEach(qId => {
+                    set.progress[qId] = {
+                        correct: 0,
+                        wrong: 0,
+                        lastSeen: null,
+                        starred: set.progress[qId]?.starred || false,
+                        mastery: 'new'
+                    };
+                });
+            });
+            appState.currentStreak = 0;
+            appState.bestStreak = 0;
+            saveState();
+            loadProgressTab();
+            showNotification('All progress cleared');
+            closeClearProgressModal();
+        }
+
+        function closeClearProgressModal() {
+            document.getElementById('clearProgressConfirmModal').classList.remove('active');
+        }
+
+        function clearAllProgress() {
+            document.getElementById('clearProgressConfirmModal').classList.add('active');
         }
 
         // ============================================
@@ -2397,6 +2988,15 @@
 
         function escapeAttr(str) {
             return escapeHtml(str).replace(/'/g, '&#39;');
+        }
+
+        function escapeCsvCell(cell) {
+            if (cell === null || cell === undefined) return '';
+            let str = String(cell);
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                str = '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
         }
 
         function showNotification(message) {
@@ -2420,13 +3020,14 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
+            loadParsedQuestions();
             loadImportTab();
             setupDropZone();
 
             // Handle OAuth hash redirect
             const hash = window.location.hash.replace('#', '').replace('Tab', '');
             if (hash) {
-                const tabMap = { 'import': 'import', 'study': 'study', 'progress': 'progress', 'review': 'review' };
+                const tabMap = { 'import': 'import', 'study': 'study', 'progress': 'progress' };
                 if (tabMap[hash]) {
                     switchTab(hash);
                 }
