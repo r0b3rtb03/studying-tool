@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiple Choice Study Tool</title>
+    <title>Study Tool</title>
     <style>
         /* ============================================
            CSS VARIABLES - LIGHT THEME
@@ -90,6 +90,21 @@
             align-items: center;
             gap: 1rem;
         }
+
+        /* Sync button */
+        .sync-btn {
+            background: none;
+            border: 1.5px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.25rem 0.5rem;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+        .sync-btn:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+        .sync-btn.connected { color: #81c784; border-color: rgba(129,199,132,0.5); }
 
         /* Theme toggle */
         .theme-toggle {
@@ -1357,6 +1372,30 @@
             font-size: 0.95rem;
         }
 
+        .modal label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            margin-top: 0.75rem;
+        }
+
+        .modal input[type="text"],
+        .modal input[type="password"] {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .modal input:focus {
+            outline: none;
+            border-color: var(--header-bg-start);
+        }
+
         .modal-actions {
             display: flex;
             gap: 0.75rem;
@@ -1417,7 +1456,7 @@
             <!-- Paste Text Method -->
             <div class="import-method active" id="pasteMethod">
                 <label for="pasteInput">Paste your questions below:</label>
-                <textarea id="pasteInput" placeholder="Paste multiple choice questions from your study material here...&#10;&#10;Example:&#10;24. What is the capital of France?&#10;A. London&#10;B. Berlin&#10;C. Paris&#10;D. Madrid"></textarea>
+                <textarea id="pasteInput" placeholder="Paste multiple choice/short questions from your study material here...&#10;&#10;Example:&#10;24. What is the capital of France?&#10;A. London&#10;B. Berlin&#10;C. Paris&#10;D. Madrid"></textarea>
                 <div style="margin-top: 1rem;">
                     <button class="btn-primary" id="parseBtn" onclick="parseQuestions('paste')">
                         Extract Questions
@@ -1623,6 +1662,26 @@
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="closeClearProgressModal()">Cancel</button>
                 <button class="btn-danger" onclick="confirmClearAllProgress()">Clear All Progress</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         SYNC MODAL
+         ============================================ -->
+    <div class="modal-overlay" id="syncModal">
+        <div class="modal">
+            <h3>Cloud Sync</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Enter your sync key to sync progress across devices. This must match the <code>SYNC_KEY</code> in your server's <code>.env</code> file.
+            </p>
+            <label for="syncKeyInput">Sync Key:</label>
+            <input type="password" id="syncKeyInput" placeholder="Enter your sync key">
+            <div id="syncStatus" style="font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2rem;"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeSyncModal()">Cancel</button>
+                <button class="btn-secondary" id="syncDisconnectBtn" onclick="disconnectSync()" style="display:none; color: var(--incorrect-border);">Disconnect</button>
+                <button class="btn-primary" onclick="connectSync()">Connect</button>
             </div>
         </div>
     </div>
@@ -3526,6 +3585,112 @@
         }
 
         // ============================================
+        // CLOUD SYNC
+        // ============================================
+
+        function updateSyncUI() {
+            const btn = document.getElementById('syncBtn');
+            if (syncEnabled) {
+                btn.style.display = '';
+                if (syncKey) {
+                    btn.classList.add('connected');
+                    btn.title = 'Cloud Sync (Connected)';
+                } else {
+                    btn.classList.remove('connected');
+                    btn.title = 'Cloud Sync (Not connected)';
+                }
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        function openSyncModal() {
+            const modal = document.getElementById('syncModal');
+            const input = document.getElementById('syncKeyInput');
+            const status = document.getElementById('syncStatus');
+            const disconnectBtn = document.getElementById('syncDisconnectBtn');
+
+            input.value = syncKey || '';
+            status.textContent = syncKey ? 'Currently connected.' : '';
+            status.style.color = syncKey ? 'var(--correct-border)' : '';
+            disconnectBtn.style.display = syncKey ? '' : 'none';
+
+            modal.classList.add('active');
+            if (!syncKey) input.focus();
+        }
+
+        function closeSyncModal() {
+            document.getElementById('syncModal').classList.remove('active');
+        }
+
+        async function connectSync() {
+            const input = document.getElementById('syncKeyInput');
+            const status = document.getElementById('syncStatus');
+            const key = input.value.trim();
+
+            if (!key) {
+                status.textContent = 'Please enter a sync key.';
+                status.style.color = 'var(--incorrect-border)';
+                return;
+            }
+
+            status.textContent = 'Testing connection...';
+            status.style.color = 'var(--text-secondary)';
+
+            try {
+                const res = await fetch('/api/sync', {
+                    headers: { 'x-sync-key': key }
+                });
+
+                if (res.status === 401) {
+                    status.textContent = 'Invalid key. Does not match server SYNC_KEY.';
+                    status.style.color = 'var(--incorrect-border)';
+                    return;
+                }
+
+                if (!res.ok) {
+                    status.textContent = 'Server error. Check console.';
+                    status.style.color = 'var(--incorrect-border)';
+                    return;
+                }
+
+                // Key is valid - save it and sync
+                syncKey = key;
+                localStorage.setItem(SYNC_KEY_STORAGE, key);
+
+                // Pull remote data and merge
+                const remote = await res.json();
+                if (remote && remote.questionSets) {
+                    mergeRemoteState(remote);
+                }
+
+                // Push our state up
+                saveState();
+
+                status.textContent = 'Connected and synced!';
+                status.style.color = 'var(--correct-border)';
+                updateSyncUI();
+                showNotification('Cloud sync connected');
+
+                // Refresh UI
+                loadImportTab();
+
+                setTimeout(() => closeSyncModal(), 1000);
+            } catch (err) {
+                status.textContent = 'Connection failed: ' + err.message;
+                status.style.color = 'var(--incorrect-border)';
+            }
+        }
+
+        function disconnectSync() {
+            syncKey = null;
+            localStorage.removeItem(SYNC_KEY_STORAGE);
+            updateSyncUI();
+            closeSyncModal();
+            showNotification('Cloud sync disconnected');
+        }
+
+        // ============================================
         // INITIALIZATION
         // ============================================
 
@@ -3547,9 +3712,12 @@
                 }
             }
 
-            // Enter key on save modal
+            // Enter key on modals
             document.getElementById('setNameInput').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') confirmSave();
+            });
+            document.getElementById('syncKeyInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') connectSync();
             });
         });
     </script>
