@@ -514,6 +514,49 @@
             color: var(--text-primary);
         }
 
+        /* Study options toolbar */
+        .study-options-bar {
+            display: none;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--hover-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .study-option-btn {
+            background: none;
+            border: 1.5px solid var(--border-color);
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .study-option-btn:hover {
+            border-color: var(--header-bg-start);
+            color: var(--text-primary);
+        }
+
+        .study-option-btn.active {
+            background: var(--header-bg-start);
+            color: #fff;
+            border-color: var(--header-bg-start);
+        }
+
+        .study-options-divider {
+            width: 1px;
+            height: 1.2rem;
+            background: var(--border-color);
+            margin: 0 0.25rem;
+        }
+
         /* Question card */
         .question-card {
             background: var(--bg-secondary);
@@ -688,6 +731,12 @@
         .submit-answer-area {
             text-align: center;
             margin-top: 1rem;
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-secondary);
+            padding: 1rem 0;
+            border-top: 1px solid var(--border-color);
+            z-index: 10;
         }
 
         /* Feedback */
@@ -1366,6 +1415,14 @@
                 <button class="mode-btn" onclick="switchStudyMode('flashcards')">Flashcards</button>
             </div>
 
+            <!-- Study options toolbar -->
+            <div class="study-options-bar" id="studyOptionsBar">
+                <button class="study-option-btn active" id="btnOriginalOrder" onclick="setQuestionOrder('original')">Original Order</button>
+                <button class="study-option-btn" id="btnShuffleQuestions" onclick="setQuestionOrder('shuffle')">Shuffle Questions</button>
+                <span class="study-options-divider"></span>
+                <button class="study-option-btn" id="btnShuffleAnswers" onclick="toggleShuffleAnswers()">Shuffle Answers</button>
+            </div>
+
             <!-- Session progress -->
             <div class="session-progress" id="sessionProgress">
                 <div class="session-progress-header">
@@ -1528,7 +1585,10 @@
             sessionWrong: 0,
             testAnswers: {},
             currentMode: 'learn',
-            learnAnswers: {} // track selected/submitted answers per question index
+            learnAnswers: {}, // track selected/submitted answers per question index
+            shuffleQuestions: false,
+            shuffleAnswers: false,
+            shuffledOptionsMap: {} // { questionIndex: [shuffled option indices] }
         };
 
         let learnSessionCache = {};
@@ -2170,21 +2230,22 @@
 
             html += '</div>';
 
-            // Submit button (shown when an option is selected but not yet submitted)
-            if (answer && answer.selected && !isSubmitted) {
-                html += `<div class="submit-answer-area">
-                    <button class="btn-primary" onclick="submitLearnAnswer()" style="margin-top: 1rem; padding: 0.65rem 2rem;">
-                        Submit Answer
-                    </button>
-                </div>`;
-            }
-
             // Feedback (shown after submission)
             if (isSubmitted) {
                 html += renderLearnFeedback(q, answer);
             }
 
             html += '</div>';
+
+            // Submit button (shown when an option is selected but not yet submitted)
+            // Rendered outside the card so it can stick to the bottom of the viewport
+            if (answer && answer.selected && !isSubmitted) {
+                html += `<div class="submit-answer-area">
+                    <button class="btn-primary" onclick="submitLearnAnswer()" style="padding: 0.65rem 2rem;">
+                        Submit Answer
+                    </button>
+                </div>`;
+            }
 
             document.getElementById('studyArea').innerHTML = html;
 
@@ -2375,7 +2436,7 @@
 
             `;
             
-            const renderGroup = (title, items, badgeClass, badgeText) => {
+            const renderGroup = (title, items, badgeClass, badgeText, borderColor) => {
                 if (items.length === 0) return '';
                 let groupHtml = `
                 <div style="max-width: 800px; margin: 0 auto 1rem auto; text-align: left;">
@@ -2385,10 +2446,10 @@
                     </h3>
                 </div>
                 <div class="summary-terms-list">`;
-                
+
                 items.forEach(({q, isCorrect}) => {
                     const answerText = getAnswerText(q);
-                    const borderStyle = isCorrect ? 'border-left: 5px solid var(--correct-border);' : 'border-left: 5px solid var(--incorrect-border);';
+                    const borderStyle = `border-left: 5px solid ${borderColor};`;
                     const statusColor = isCorrect ? 'var(--correct-border)' : 'var(--incorrect-border)';
                     const statusIcon = isCorrect ? '\u2713' : '\u00D7';
                     const statusText = isCorrect ? 'Correct' : 'Incorrect';
@@ -2416,9 +2477,9 @@
                 return groupHtml;
             };
             
-            html += renderGroup('Still Learning', groups.stillLearning, 'mastery-learning', 'Learning');
-            html += renderGroup('Familiar', groups.familiar, 'mastery-familiar', 'Familiar');
-            html += renderGroup('Mastered', groups.mastered, 'mastery-mastered', 'Mastered');
+            html += renderGroup('Still Learning', groups.stillLearning, 'mastery-learning', 'Learning', '#d32f2f');
+            html += renderGroup('Familiar', groups.familiar, 'mastery-familiar', 'Familiar', '#f5a100');
+            html += renderGroup('Mastered', groups.mastered, 'mastery-mastered', 'Mastered', '#2e7d32');
             
             html += `</div>`;
             
