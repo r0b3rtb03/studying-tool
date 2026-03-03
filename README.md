@@ -11,13 +11,13 @@ This application is an AI-powered study tool designed to transform raw text and 
     * **Paste Text**: Directly paste study notes or review sheets into the interface.
     * **PDF Upload**: Extracts text from PDF documents for processing.
 * **Comprehensive Study Modes**:
-    * **Learn Mode**: A focused mode with a submit button that tracks mastery levels as questions are answered.
+    * **Learn Mode**: A focused mode that tracks mastery levels, featuring a summary screen with categorized results (Still Learning, Familiar, Mastered).
     * **Test Mode**: Simulates a formal exam environment and provides a grade upon completion.
     * **Review Mode**: Browse all questions with search and filters (starred, frequently wrong, unseen, mastered).
-    * **Flashcard Mode**: Quizlet-style flashcards — click to reveal the answer, navigate with Previous/Next.
+    * **Flashcard Mode**: Quizlet-style flashcards — click to reveal the answer, navigate with Previous/Next, with options to Shuffle or Reset Order.
 * **Quizlet-Style Question Display**: Extracted and saved questions appear in a two-panel layout (question on the left, answer on the right).
 * **Persistent Data**: Question sets and extracted questions persist across page refreshes via localStorage.
-* **Progress Tracking**: Tracks mastery levels (New, Learning, Familiar, Mastered), accuracy percentages, and study streaks.
+* **Progress Tracking**: Tracks mastery levels (New, Learning, Familiar, Mastered), accuracy percentages, and study streaks. Includes CSV export functionality.
 * **Dark Mode**: Full dark mode support with a toggle in the header.
 
 ---
