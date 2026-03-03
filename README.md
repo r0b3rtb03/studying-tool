@@ -1,6 +1,6 @@
 # Multiple Choice Study Tool
 
-This application is an AI-powered study tool designed to transform raw text, PDF documents, and Google Docs into interactive, multiple-choice quizzes. It utilizes the Claude (Anthropic) API to automatically extract questions, options, and answer keys from provided materials. Because I'm banned off quizlet this is my only option!
+This application is an AI-powered study tool designed to transform raw text and PDF documents into interactive, multiple-choice quizzes. It utilizes the Claude (Anthropic) API to automatically extract questions, options, and answer keys from provided materials. Because I'm banned off quizlet this is my only option!
 
 ---
 
@@ -8,24 +8,26 @@ This application is an AI-powered study tool designed to transform raw text, PDF
 
 * **AI Question Extraction**: Uses the Claude API to intelligently parse content and generate structured multiple-choice questions.
 * **Flexible Import Options**:
-    * **Paste Text**: Users can directly paste study notes or review sheets into the interface.
+    * **Paste Text**: Directly paste study notes or review sheets into the interface.
     * **PDF Upload**: Extracts text from PDF documents for processing.
-    * **Google Docs Integration**: Connects to Google Drive to search and import documents directly.
 * **Comprehensive Study Modes**:
-    * **Learn Mode**: A focused mode that tracks mastery levels as questions are answered.
+    * **Learn Mode**: A focused mode with a submit button that tracks mastery levels as questions are answered.
     * **Test Mode**: Simulates a formal exam environment and provides a grade upon completion.
-    * **Review Mode**: Allows users to browse all questions and filter by "starred" items or frequently missed content.
+    * **Review Mode**: Browse all questions with search and filters (starred, frequently wrong, unseen, mastered).
+    * **Flashcard Mode**: Quizlet-style flashcards — click to reveal the answer, navigate with Previous/Next.
+* **Quizlet-Style Question Display**: Extracted and saved questions appear in a two-panel layout (question on the left, answer on the right).
+* **Persistent Data**: Question sets and extracted questions persist across page refreshes via localStorage.
 * **Progress Tracking**: Tracks mastery levels (New, Learning, Familiar, Mastered), accuracy percentages, and study streaks.
-* **User Interface Customization**: Includes a native Dark Mode and the ability to star difficult questions for later review.
+* **Dark Mode**: Full dark mode support with a toggle in the header.
 
 ---
 
 ## Tech Stack
 
-* **Frontend**: Built with HTML5, CSS3, and Vanilla JavaScript.
+* **Frontend**: HTML5, CSS3, and Vanilla JavaScript (single-page app).
 * **CSS Variables**: Used for theme switching and consistent UI styling.
-* **Backend**: Node.js and Express server.
-* **Integrations**: Google Drive/Docs API, Anthropic SDK, and `pdf-parse` for document processing.
+* **Backend**: Node.js and Express.
+* **Integrations**: Anthropic Claude API and `pdf-parse` for document processing.
 
 ---
 
@@ -36,31 +38,30 @@ This application is an AI-powered study tool designed to transform raw text, PDF
    git clone <repository-url>
    cd studying-tool
    ```
-2. **Install dependencies:**:
+2. **Install dependencies**:
    ```bash
    npm install
    ```
-3. **Configure environment variables:**
-    Create a `.env` file in the root directory and add the following credentials:
+3. **Configure environment variables**:
+    Create a `.env` file in the root directory:
     ```bash
-    PORT=3000
     ANTHROPIC_API_KEY=your_anthropic_api_key
-    CLAUDE_MODEL=claude-3-5-sonnet-20240620
-    SESSION_SECRET=your_random_secret
 
-    # Optional: Google Docs Integration
-    GOOGLE_CLIENT_ID=your_google_client_id
-    GOOGLE_CLIENT_SECRET=your_google_client_secret
-    GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+    # Optional
+    PORT=3000
+    CLAUDE_MODEL=claude-sonnet-4-20250514
     ```
-4. **Start the application:**
+4. **Start the application**:
     ```bash
     npm start
     ```
-    The tool will be accessible at `http://localhost:3000.`
+    The tool will be accessible at `http://localhost:3000`.
+
+---
 
 ## Usage
-1. **Import Content:** Navigate to the Import tab and choose a method to extract questions from your study materials.
-2. **Save Question Set:** Review the AI-extracted questions in the preview area and save them to your library with a custom name.
-3. **Start Studying:** Switch to the Study tab to select an active set and choose between Learn, Test, or Review modes.
-4. **Monitor Progress:** Visit the Progress tab to view accuracy stats and question breakdowns.
+
+1. **Import Content**: Go to the Home tab, choose Paste Text or Upload PDF, and click "Extract Questions".
+2. **Save Question Set**: Review the extracted questions in the Quizlet-style preview and save them with a custom name.
+3. **Start Studying**: Switch to the Study tab, select a set, and choose Learn, Test, Review, or Flashcards mode.
+4. **Monitor Progress**: Visit the Progress tab to view accuracy stats and question breakdowns.
