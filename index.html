@@ -678,6 +678,51 @@
             font-size: 0.95rem;
         }
 
+        /* Short answer input */
+        .short-answer-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .short-answer-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        .short-answer-input:focus {
+            outline: none;
+            border-color: var(--header-bg-start);
+        }
+
+        .short-answer-input:disabled {
+            opacity: 0.85;
+            cursor: default;
+        }
+
+        .short-answer-input.correct {
+            border-color: var(--correct-border);
+            background: var(--correct-bg);
+        }
+
+        .short-answer-input.incorrect {
+            border-color: var(--incorrect-border);
+            background: var(--incorrect-bg);
+        }
+
+        .short-answer-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
         /* Session progress bar */
         .session-progress {
             background: var(--bg-secondary);
@@ -832,6 +877,27 @@
         .fc-card-header .star-btn.starred {
             color: #f9a825;
             opacity: 1;
+        }
+
+        .fc-card-header .mastery-new {
+            background: rgba(100, 181, 246, 0.25);
+            color: #90caf9;
+            border: 1px solid rgba(100, 181, 246, 0.4);
+        }
+        .fc-card-header .mastery-learning {
+            background: rgba(239, 83, 80, 0.25);
+            color: #ef9a9a;
+            border: 1px solid rgba(239, 83, 80, 0.45);
+        }
+        .fc-card-header .mastery-familiar {
+            background: rgba(255, 179, 0, 0.25);
+            color: #ffe082;
+            border: 1px solid rgba(255, 179, 0, 0.45);
+        }
+        .fc-card-header .mastery-mastered {
+            background: rgba(76, 175, 80, 0.25);
+            color: #a5d6a7;
+            border: 1px solid rgba(76, 175, 80, 0.45);
         }
 
         .fc-card-body {
@@ -1304,8 +1370,11 @@
          HEADER
          ============================================ -->
     <div class="header">
-        <h1>Multiple Choice Study Tool</h1>
+        <h1>Study Tool</h1>
         <div class="header-controls">
+            <button id="syncBtn" class="sync-btn" onclick="openSyncModal()" style="display:none;" title="Cloud Sync">
+                <span id="syncIcon">&#9729;</span>
+            </button>
             <label class="theme-toggle">
                 <span>Dark</span>
                 <div class="toggle-switch">
@@ -1376,8 +1445,9 @@
                     <span style="font-size: 0.9rem; font-weight: 600; color: var(--header-bg-start);" id="previewCount"></span>
                 </div>
                 <div id="previewQuestions"></div>
-                <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
-                    <button class="btn-primary" onclick="saveQuestionSet()">Save Question Set</button>
+                <div style="margin-top: 1rem; display: flex; gap: 0.75rem;" id="previewActions">
+                    <button class="btn-primary" onclick="saveQuestionSet()">Save as New Set</button>
+                    <button class="btn-primary" id="addToSetBtn" onclick="addToCurrentSet()" style="display:none;">Add to Current Set</button>
                     <button class="btn-secondary" onclick="clearPreview()">Discard</button>
                 </div>
             </div>
@@ -1417,10 +1487,9 @@
 
             <!-- Study options toolbar -->
             <div class="study-options-bar" id="studyOptionsBar">
-                <button class="study-option-btn active" id="btnOriginalOrder" onclick="setQuestionOrder('original')">Original Order</button>
-                <button class="study-option-btn" id="btnShuffleQuestions" onclick="setQuestionOrder('shuffle')">Shuffle Questions</button>
-                <span class="study-options-divider"></span>
-                <button class="study-option-btn" id="btnShuffleAnswers" onclick="toggleShuffleAnswers()">Shuffle Answers</button>
+                <button class="study-option-btn" onclick="shuffleLearnQuestions()">Shuffle Questions</button>
+                <button class="study-option-btn" onclick="shuffleLearnOptions()">Shuffle Options</button>
+                <button class="study-option-btn" onclick="orderLearnQuestions()">Put in Order</button>
             </div>
 
             <!-- Session progress -->
@@ -1568,6 +1637,10 @@
 
         const STORAGE_KEY = 'mcStudyTool';
         const PARSED_KEY = 'mcStudyTool_parsed';
+        const SYNC_KEY_STORAGE = 'mcStudyTool_syncKey';
+
+        let syncEnabled = false;
+        let syncKey = localStorage.getItem(SYNC_KEY_STORAGE) || null;
 
         let appState = {
             questionSets: {},
@@ -1607,9 +1680,19 @@
             } catch (e) {
                 console.error('Save failed:', e);
             }
+
+            // Background sync to server if enabled
+            if (syncEnabled && syncKey) {
+                fetch('/api/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-sync-key': syncKey },
+                    body: JSON.stringify(appState)
+                }).catch(err => console.error('Sync push failed:', err.message));
+            }
         }
 
-        function loadState() {
+        async function loadState() {
+            // Always load local first
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
@@ -1620,11 +1703,81 @@
                 console.error('Load failed:', e);
             }
 
+            // Check if server has sync enabled
+            try {
+                const statusRes = await fetch('/api/sync/status');
+                const status = await statusRes.json();
+                syncEnabled = status.enabled;
+            } catch { syncEnabled = false; }
+
+            // If sync enabled and we have a key, pull remote and merge
+            if (syncEnabled && syncKey) {
+                try {
+                    const res = await fetch('/api/sync', {
+                        headers: { 'x-sync-key': syncKey }
+                    });
+                    if (res.ok) {
+                        const remote = await res.json();
+                        if (remote && remote.questionSets) {
+                            mergeRemoteState(remote);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Sync pull failed:', err.message);
+                }
+            }
+
             // Apply theme
             if (appState.darkMode) {
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeToggle').checked = true;
             }
+        }
+
+        function mergeRemoteState(remote) {
+            // Merge question sets - keep the version with more progress
+            if (remote.questionSets) {
+                for (const [setId, remoteSet] of Object.entries(remote.questionSets)) {
+                    const localSet = appState.questionSets[setId];
+                    if (!localSet) {
+                        // Remote has a set we don't - take it
+                        appState.questionSets[setId] = remoteSet;
+                    } else {
+                        // Both have it - merge progress (keep higher counts)
+                        for (const [qId, remoteProg] of Object.entries(remoteSet.progress || {})) {
+                            const localProg = localSet.progress[qId];
+                            if (!localProg) {
+                                localSet.progress[qId] = remoteProg;
+                            } else {
+                                localProg.correct = Math.max(localProg.correct || 0, remoteProg.correct || 0);
+                                localProg.wrong = Math.max(localProg.wrong || 0, remoteProg.wrong || 0);
+                                localProg.starred = localProg.starred || remoteProg.starred;
+                                localProg.lastSeen = Math.max(localProg.lastSeen || 0, remoteProg.lastSeen || 0);
+                                // Recalculate mastery from merged counts
+                                localProg.mastery = calculateMastery(localProg);
+                            }
+                        }
+                        // If remote has more questions, take them
+                        if (remoteSet.questions.length > localSet.questions.length) {
+                            const localIds = new Set(localSet.questions.map(q => q.id));
+                            remoteSet.questions.forEach(q => {
+                                if (!localIds.has(q.id)) localSet.questions.push(q);
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Take best streak
+            appState.bestStreak = Math.max(appState.bestStreak || 0, remote.bestStreak || 0);
+
+            // If we don't have an active set but remote does, use it
+            if (!appState.activeSetId && remote.activeSetId) {
+                appState.activeSetId = remote.activeSetId;
+            }
+
+            // Save merged state locally
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
         }
 
         function saveParsedQuestions() {
@@ -1753,11 +1906,11 @@
                     parsedQuestions = data.questions;
                     saveParsedQuestions();
                     showPreview(data.questions);
-                    showNotification(`Found ${data.questions.length} multiple choice questions`);
+                    showNotification(`Found ${data.questions.length} questions`);
                 } else if (data.error) {
                     showNotification('Error: ' + data.error);
                 } else {
-                    showNotification('No multiple choice questions found in the text');
+                    showNotification('No questions found in the text');
                 }
             } catch (err) {
                 showNotification('Failed to parse questions: ' + err.message);
@@ -1779,16 +1932,19 @@
             let html = '';
             questions.forEach((q, i) => {
                 const answerText = getAnswerText(q);
+                const typeLabel = isShortAnswer(q) ? ' <span style="font-size:0.75rem; color: var(--text-secondary); font-weight:400;">(Short Answer)</span>' : '';
                 html += `<div class="flashcard-item">
                     <div class="flashcard-left">
-                        <div class="flashcard-q-num"><strong>Question ${q.number || (i + 1)}</strong></div>
-                        <div class="flashcard-q-text">${escapeHtml(q.question)}</div>
-                        <div class="flashcard-options-list">`;
-                (q.options || []).forEach(opt => {
-                    html += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
-                });
+                        <div class="flashcard-q-num"><strong>Question ${q.number || (i + 1)}</strong>${typeLabel}</div>
+                        <div class="flashcard-q-text">${escapeHtml(q.question)}</div>`;
+                if (!isShortAnswer(q)) {
+                    html += `<div class="flashcard-options-list">`;
+                    (q.options || []).forEach(opt => {
+                        html += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
+                    });
+                    html += `</div>`;
+                }
                 html += `</div>
-                    </div>
                     <div class="flashcard-right">
                         <div>${answerText ? escapeHtml(answerText) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}</div>
                     </div>
@@ -1798,12 +1954,43 @@
             listEl.innerHTML = html;
             area.style.display = 'block';
 
+            // Show "Add to Current Set" button if there's an active set
+            const addBtn = document.getElementById('addToSetBtn');
+            const activeSet = appState.activeSetId && appState.questionSets[appState.activeSetId];
+            if (addBtn) {
+                if (activeSet) {
+                    addBtn.style.display = '';
+                    addBtn.textContent = `Add to "${activeSet.name}"`;
+                } else {
+                    addBtn.style.display = 'none';
+                }
+            }
+
             // Hide saved set viewer when showing preview
             document.getElementById('savedSetViewer').style.display = 'none';
         }
 
+        function isShortAnswer(q) {
+            return q.type === 'short_answer';
+        }
+
+        function normalizeAnswer(str) {
+            return str.trim().toLowerCase().replace(/[.,;:!?'"()\-]/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        function checkShortAnswer(q, userAnswer) {
+            if (!q.correctAnswer) return false;
+            const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
+            const normalized = normalizeAnswer(userAnswer);
+            return answers.some(a => normalizeAnswer(a) === normalized);
+        }
+
         function getAnswerText(q) {
             if (!q.correctAnswer) return null;
+            if (isShortAnswer(q)) {
+                const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
+                return answers.join(' or ');
+            }
             const correctOpt = (q.options || []).find(o => o.letter.toUpperCase() === q.correctAnswer.toUpperCase());
             if (correctOpt) {
                 return `${correctOpt.letter}. ${correctOpt.text}`;
@@ -1865,6 +2052,37 @@
             }, 10);
         }
 
+        function addToCurrentSet() {
+            if (parsedQuestions.length === 0) return;
+
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) {
+                showNotification('No active set to add to');
+                return;
+            }
+
+            // Build unique IDs for new questions to avoid collisions
+            const existingIds = new Set(set.questions.map(q => q.id));
+            const newQuestions = parsedQuestions.map((q, i) => {
+                let id = q.id || ('q' + (q.number || i));
+                // If ID already exists, make it unique
+                while (existingIds.has(id)) {
+                    id = id + '_' + Date.now() + '_' + i;
+                }
+                existingIds.add(id);
+                return { ...q, id };
+            });
+
+            const countBefore = set.questions.length;
+            set.questions.push(...newQuestions);
+
+            saveState();
+            clearPreview();
+            document.getElementById('pasteInput').value = '';
+            showNotification(`Added ${newQuestions.length} questions to "${set.name}" (${countBefore} → ${set.questions.length})`);
+            loadImportTab();
+        }
+
         // ---- Saved Set Viewer (Quizlet-style on Home tab) ----
 
         function renderSavedSetViewer() {
@@ -1889,16 +2107,19 @@
             let html = '';
             set.questions.forEach((q, i) => {
                 const answerText = getAnswerText(q);
+                const typeLabel = isShortAnswer(q) ? ' <span style="font-size:0.75rem; color: var(--text-secondary); font-weight:400;">(Short Answer)</span>' : '';
                 html += `<div class="flashcard-item">
                     <div class="flashcard-left">
-                        <div class="flashcard-q-num"><strong>Question ${q.number || (i + 1)}</strong></div>
-                        <div class="flashcard-q-text">${escapeHtml(q.question)}</div>
-                        <div class="flashcard-options-list">`;
-                (q.options || []).forEach(opt => {
-                    html += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
-                });
+                        <div class="flashcard-q-num"><strong>Question ${q.number || (i + 1)}</strong>${typeLabel}</div>
+                        <div class="flashcard-q-text">${escapeHtml(q.question)}</div>`;
+                if (!isShortAnswer(q)) {
+                    html += `<div class="flashcard-options-list">`;
+                    (q.options || []).forEach(opt => {
+                        html += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
+                    });
+                    html += `</div>`;
+                }
                 html += `</div>
-                    </div>
                     <div class="flashcard-right">
                         <div>${answerText ? escapeHtml(answerText) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}</div>
                     </div>
@@ -2160,12 +2381,61 @@
             sessionState.currentIndex = 0;
             sessionState.learnAnswers = {};
 
+            document.getElementById('studyOptionsBar').style.display = 'flex';
             document.getElementById('sessionProgress').style.display = 'block';
             document.getElementById('studyNav').style.display = 'flex';
             document.getElementById('testSubmitArea').style.display = 'none';
             document.getElementById('testResults').style.display = 'none';
 
             renderLearnQuestion();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function shuffleLearnQuestions() {
+            shuffleArray(sessionState.questionOrder);
+            sessionState.currentIndex = 0;
+            sessionState.learnAnswers = {};
+            sessionState.sessionCorrect = 0;
+            sessionState.sessionWrong = 0;
+            renderLearnQuestion();
+            showNotification('Questions shuffled');
+        }
+
+        function shuffleLearnOptions() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+            set.questions.forEach(q => {
+                if (q.options && q.options.length > 1) {
+                    shuffleArray(q.options);
+                }
+            });
+            renderLearnQuestion();
+            showNotification('Options shuffled');
+        }
+
+        function orderLearnQuestions() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+            sessionState.questionOrder = set.questions.map((_, i) => i);
+            sessionState.currentIndex = 0;
+            sessionState.learnAnswers = {};
+            sessionState.sessionCorrect = 0;
+            sessionState.sessionWrong = 0;
+            // Also restore original option order by sorting by letter
+            set.questions.forEach(q => {
+                if (q.options && q.options.length > 1) {
+                    q.options.sort((a, b) => a.letter.localeCompare(b.letter));
+                }
+            });
+            renderLearnQuestion();
+            showNotification('Put back in order');
         }
 
         function renderLearnQuestion() {
@@ -2198,37 +2468,53 @@
                         ${prog.starred ? '\u2605' : '\u2606'}
                     </button>
                 </div>
-                <div class="question-text">${escapeHtml(q.question)}</div>
-                <div class="mc-options" id="optionsContainer">`;
+                <div class="question-text">${escapeHtml(q.question)}</div>`;
 
-            q.options.forEach(opt => {
-                let classes = 'mc-option';
-                if (isSubmitted) {
-                    classes += ' disabled';
-                    if (q.correctAnswer && q.correctAnswer.toUpperCase() === opt.letter.toUpperCase()) {
-                        classes += ' correct-answer';
-                    }
-                    if (answer.selected === opt.letter && q.correctAnswer &&
-                        answer.selected.toUpperCase() !== q.correctAnswer.toUpperCase()) {
-                        classes += ' wrong-answer';
-                    }
-                    if (!q.correctAnswer && answer.selected === opt.letter) {
+            if (isShortAnswer(q)) {
+                // Short answer / fill-in-the-blank
+                const inputVal = answer ? escapeAttr(answer.selected || '') : '';
+                const inputClass = isSubmitted
+                    ? (checkShortAnswer(q, answer.selected) ? 'correct' : (q.correctAnswer ? 'incorrect' : ''))
+                    : '';
+                html += `<div class="short-answer-area">
+                    <input type="text" class="short-answer-input ${inputClass}" id="shortAnswerInput"
+                           placeholder="Type your answer..."
+                           value="${inputVal}"
+                           ${isSubmitted ? 'disabled' : ''}
+                           oninput="updateLearnShortAnswer(this.value)"
+                           onkeydown="if(event.key==='Enter')submitLearnAnswer()">
+                </div>`;
+            } else {
+                // Multiple choice
+                html += `<div class="mc-options" id="optionsContainer">`;
+                q.options.forEach(opt => {
+                    let classes = 'mc-option';
+                    if (isSubmitted) {
+                        classes += ' disabled';
+                        if (q.correctAnswer && q.correctAnswer.toUpperCase() === opt.letter.toUpperCase()) {
+                            classes += ' correct-answer';
+                        }
+                        if (answer.selected === opt.letter && q.correctAnswer &&
+                            answer.selected.toUpperCase() !== q.correctAnswer.toUpperCase()) {
+                            classes += ' wrong-answer';
+                        }
+                        if (!q.correctAnswer && answer.selected === opt.letter) {
+                            classes += ' selected';
+                        }
+                    } else if (answer && answer.selected === opt.letter) {
                         classes += ' selected';
                     }
-                } else if (answer && answer.selected === opt.letter) {
-                    classes += ' selected';
-                }
 
-                const clickHandler = isSubmitted ? '' :
-                    `onclick="selectLearnOption('${escapeAttr(opt.letter)}')"`;
+                    const clickHandler = isSubmitted ? '' :
+                        `onclick="selectLearnOption('${escapeAttr(opt.letter)}')"`;
 
-                html += `<div class="${classes}" ${clickHandler} id="option_${opt.letter}">
-                    <div class="option-letter">${escapeHtml(opt.letter)}</div>
-                    <div class="option-text">${escapeHtml(opt.text)}</div>
-                </div>`;
-            });
-
-            html += '</div>';
+                    html += `<div class="${classes}" ${clickHandler} id="option_${opt.letter}">
+                        <div class="option-letter">${escapeHtml(opt.letter)}</div>
+                        <div class="option-text">${escapeHtml(opt.text)}</div>
+                    </div>`;
+                });
+                html += '</div>';
+            }
 
             // Feedback (shown after submission)
             if (isSubmitted) {
@@ -2237,9 +2523,11 @@
 
             html += '</div>';
 
-            // Submit button (shown when an option is selected but not yet submitted)
-            // Rendered outside the card so it can stick to the bottom of the viewport
-            if (answer && answer.selected && !isSubmitted) {
+            // Submit button
+            // For MC: shown when an option is selected but not yet submitted
+            // For short answer: shown when input has text but not yet submitted
+            const hasAnswer = answer && answer.selected && (isShortAnswer(q) ? answer.selected.trim() !== '' : true);
+            if (hasAnswer && !isSubmitted) {
                 html += `<div class="submit-answer-area">
                     <button class="btn-primary" onclick="submitLearnAnswer()" style="padding: 0.65rem 2rem;">
                         Submit Answer
@@ -2248,6 +2536,12 @@
             }
 
             document.getElementById('studyArea').innerHTML = html;
+
+            // Focus the short answer input if not submitted
+            if (isShortAnswer(q) && !isSubmitted) {
+                const input = document.getElementById('shortAnswerInput');
+                if (input) input.focus();
+            }
 
             document.getElementById('prevBtn').disabled = sessionState.currentIndex === 0;
             
@@ -2273,18 +2567,44 @@
             renderLearnQuestion();
         }
 
+        function updateLearnShortAnswer(value) {
+            if (!sessionState.learnAnswers[sessionState.currentIndex]) {
+                sessionState.learnAnswers[sessionState.currentIndex] = { selected: null, submitted: false };
+            }
+            if (sessionState.learnAnswers[sessionState.currentIndex].submitted) return;
+
+            sessionState.learnAnswers[sessionState.currentIndex].selected = value;
+
+            // Toggle submit button visibility without re-rendering (to keep focus)
+            const existing = document.querySelector('.submit-answer-area');
+            if (value.trim()) {
+                if (!existing) {
+                    const area = document.createElement('div');
+                    area.className = 'submit-answer-area';
+                    area.innerHTML = `<button class="btn-primary" onclick="submitLearnAnswer()" style="padding: 0.65rem 2rem;">Submit Answer</button>`;
+                    document.getElementById('currentCard').insertAdjacentElement('afterend', area);
+                }
+            } else if (existing) {
+                existing.remove();
+            }
+        }
+
         function submitLearnAnswer() {
             const answer = sessionState.learnAnswers[sessionState.currentIndex];
             if (!answer || !answer.selected || answer.submitted) return;
 
-            answer.submitted = true;
-
+            // For short answer, don't submit empty strings
             const set = appState.questionSets[appState.activeSetId];
             const qIdx = sessionState.questionOrder[sessionState.currentIndex];
             const q = set.questions[qIdx];
 
-            const isCorrect = q.correctAnswer &&
-                answer.selected.toUpperCase() === q.correctAnswer.toUpperCase();
+            if (isShortAnswer(q) && !answer.selected.trim()) return;
+
+            answer.submitted = true;
+
+            const isCorrect = isShortAnswer(q)
+                ? checkShortAnswer(q, answer.selected)
+                : (q.correctAnswer && answer.selected.toUpperCase() === q.correctAnswer.toUpperCase());
 
             // Update progress
             if (!set.progress[q.id]) {
@@ -2317,6 +2637,25 @@
         function renderLearnFeedback(q, answer) {
             if (!answer || !answer.submitted) return '';
 
+            if (isShortAnswer(q)) {
+                const isCorrect = checkShortAnswer(q, answer.selected);
+                if (q.correctAnswer) {
+                    const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
+                    if (isCorrect) {
+                        return `<div class="feedback correct">Correct!</div>`;
+                    } else {
+                        return `<div class="feedback incorrect">
+                            Incorrect. The correct answer is: ${escapeHtml(answers.join(' or '))}.
+                            ${q.explanation ? `<div class="explanation">${escapeHtml(q.explanation)}</div>` : ''}
+                        </div>`;
+                    }
+                } else {
+                    return `<div class="feedback" style="background: var(--info-bg); border: 1px solid var(--info-border); color: var(--text-primary);">
+                        You answered: ${escapeHtml(answer.selected)}. (No answer key available for this question)
+                    </div>`;
+                }
+            }
+
             const isCorrect = q.correctAnswer &&
                 answer.selected.toUpperCase() === q.correctAnswer.toUpperCase();
 
@@ -2347,6 +2686,7 @@
 
         function showLearnSummary() {
             sessionState.isFinished = true;
+            document.getElementById('studyOptionsBar').style.display = 'none';
             document.getElementById('sessionProgress').style.display = 'none';
             document.getElementById('studyNav').style.display = 'none';
             
@@ -2380,7 +2720,11 @@
                 const p = set.progress[q.id];
                 const mastery = p.mastery || 'new';
                 const answer = sessionState.learnAnswers[i];
-                const isCorrect = answer && q.correctAnswer && answer.selected.toUpperCase() === q.correctAnswer.toUpperCase();
+                const isCorrect = answer && q.correctAnswer && (
+                    isShortAnswer(q)
+                        ? checkShortAnswer(q, answer.selected)
+                        : answer.selected.toUpperCase() === q.correctAnswer.toUpperCase()
+                );
                 const item = { q, isCorrect };
 
                 if (mastery === 'mastered') groups.mastered.push(item);
@@ -2461,12 +2805,15 @@
                                     <strong>Question ${q.number || ''}</strong>
                                     <span style="color: ${statusColor}; font-weight: bold;">${statusText} ${statusIcon}</span>
                                 </div>
-                                <div class="flashcard-q-text">${escapeHtml(q.question)}</div>
-                                <div class="flashcard-options-list">`;
-                    (q.options || []).forEach(opt => {
-                        groupHtml += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
-                    });
-                    groupHtml += `</div>
+                                <div class="flashcard-q-text">${escapeHtml(q.question)}</div>`;
+                    if (!isShortAnswer(q)) {
+                        groupHtml += `<div class="flashcard-options-list">`;
+                        (q.options || []).forEach(opt => {
+                            groupHtml += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
+                        });
+                        groupHtml += `</div>`;
+                    }
+                    groupHtml += `
                             </div>
                             <div class="flashcard-right">
                                 <div>${answerText ? escapeHtml(answerText) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}</div>
@@ -2530,6 +2877,7 @@
             sessionState.testAnswers = {};
             sessionState.questionOrder = set.questions.map((_, i) => i);
 
+            document.getElementById('studyOptionsBar').style.display = 'none';
             document.getElementById('sessionProgress').style.display = 'block';
             document.getElementById('studyNav').style.display = 'none';
             document.getElementById('testSubmitArea').style.display = 'block';
@@ -2544,18 +2892,27 @@
             set.questions.forEach((q, i) => {
                 html += `<div class="question-card" id="testCard_${i}">
                     <div class="question-number"><strong>Question ${q.number || (i + 1)}</strong></div>
-                    <div class="question-text">${escapeHtml(q.question)}</div>
-                    <div class="mc-options">`;
+                    <div class="question-text">${escapeHtml(q.question)}</div>`;
 
-                q.options.forEach(opt => {
-                    html += `<div class="mc-option" onclick="selectTestAnswer(${i}, '${escapeAttr(opt.letter)}')"
-                                 id="test_${i}_${opt.letter}">
-                        <div class="option-letter">${escapeHtml(opt.letter)}</div>
-                        <div class="option-text">${escapeHtml(opt.text)}</div>
+                if (isShortAnswer(q)) {
+                    html += `<div class="short-answer-area">
+                        <input type="text" class="short-answer-input" id="test_sa_${i}"
+                               placeholder="Type your answer..."
+                               oninput="updateTestShortAnswer(${i}, this.value)">
                     </div>`;
-                });
+                } else {
+                    html += `<div class="mc-options">`;
+                    q.options.forEach(opt => {
+                        html += `<div class="mc-option" onclick="selectTestAnswer(${i}, '${escapeAttr(opt.letter)}')"
+                                     id="test_${i}_${opt.letter}">
+                            <div class="option-letter">${escapeHtml(opt.letter)}</div>
+                            <div class="option-text">${escapeHtml(opt.text)}</div>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
 
-                html += `</div></div>`;
+                html += `</div>`;
             });
 
             document.getElementById('studyArea').innerHTML = html;
@@ -2576,7 +2933,20 @@
             const el = document.getElementById(`test_${questionIndex}_${letter}`);
             if (el) el.classList.add('selected');
 
-            // Update progress
+            updateTestProgress(set);
+        }
+
+        function updateTestShortAnswer(questionIndex, value) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (value.trim()) {
+                sessionState.testAnswers[questionIndex] = value;
+            } else {
+                delete sessionState.testAnswers[questionIndex];
+            }
+            updateTestProgress(set);
+        }
+
+        function updateTestProgress(set) {
             const answered = Object.keys(sessionState.testAnswers).length;
             const total = set.questions.length;
             document.getElementById('sessionProgressBar').style.width =
@@ -2608,35 +2978,72 @@
 
                 const card = document.getElementById(`testCard_${i}`);
 
-                if (selected && q.correctAnswer) {
-                    const isCorrect = selected.toUpperCase() === q.correctAnswer.toUpperCase();
-                    if (isCorrect) {
-                        set.progress[q.id].correct++;
-                        correct++;
-                        if (card) card.classList.add('correct');
-                    } else {
-                        set.progress[q.id].wrong++;
-                        wrong++;
-                        if (card) card.classList.add('incorrect');
+                if (isShortAnswer(q)) {
+                    // Short answer grading
+                    const saInput = document.getElementById(`test_sa_${i}`);
+                    if (saInput) saInput.disabled = true;
+
+                    if (selected && q.correctAnswer) {
+                        const isCorrect = checkShortAnswer(q, selected);
+                        if (isCorrect) {
+                            set.progress[q.id].correct++;
+                            correct++;
+                            if (card) card.classList.add('correct');
+                            if (saInput) saInput.classList.add('correct');
+                        } else {
+                            set.progress[q.id].wrong++;
+                            wrong++;
+                            if (card) card.classList.add('incorrect');
+                            if (saInput) saInput.classList.add('incorrect');
+                        }
+                        set.progress[q.id].mastery = calculateMastery(set.progress[q.id]);
+                    } else if (!q.correctAnswer) {
+                        noKey++;
                     }
-                    set.progress[q.id].mastery = calculateMastery(set.progress[q.id]);
-                } else if (!q.correctAnswer) {
-                    noKey++;
-                }
 
-                // Disable and highlight options
-                document.querySelectorAll(`[id^="test_${i}_"]`).forEach(el => {
-                    el.classList.add('disabled');
-                    el.onclick = null;
-                });
+                    // Show correct answer below the input
+                    if (q.correctAnswer) {
+                        const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
+                        const feedbackDiv = document.createElement('div');
+                        feedbackDiv.className = selected && checkShortAnswer(q, selected)
+                            ? 'feedback correct' : 'feedback incorrect';
+                        feedbackDiv.textContent = selected && checkShortAnswer(q, selected)
+                            ? 'Correct!'
+                            : `Correct answer: ${answers.join(' or ')}`;
+                        card.appendChild(feedbackDiv);
+                    }
+                } else {
+                    // Multiple choice grading
+                    if (selected && q.correctAnswer) {
+                        const isCorrect = selected.toUpperCase() === q.correctAnswer.toUpperCase();
+                        if (isCorrect) {
+                            set.progress[q.id].correct++;
+                            correct++;
+                            if (card) card.classList.add('correct');
+                        } else {
+                            set.progress[q.id].wrong++;
+                            wrong++;
+                            if (card) card.classList.add('incorrect');
+                        }
+                        set.progress[q.id].mastery = calculateMastery(set.progress[q.id]);
+                    } else if (!q.correctAnswer) {
+                        noKey++;
+                    }
 
-                if (q.correctAnswer) {
-                    const correctEl = document.getElementById(`test_${i}_${q.correctAnswer}`);
-                    if (correctEl) correctEl.classList.add('correct-answer');
-                }
-                if (selected && q.correctAnswer && selected.toUpperCase() !== q.correctAnswer.toUpperCase()) {
-                    const wrongEl = document.getElementById(`test_${i}_${selected}`);
-                    if (wrongEl) wrongEl.classList.add('wrong-answer');
+                    // Disable and highlight options
+                    document.querySelectorAll(`[id^="test_${i}_"]`).forEach(el => {
+                        el.classList.add('disabled');
+                        el.onclick = null;
+                    });
+
+                    if (q.correctAnswer) {
+                        const correctEl = document.getElementById(`test_${i}_${q.correctAnswer}`);
+                        if (correctEl) correctEl.classList.add('correct-answer');
+                    }
+                    if (selected && q.correctAnswer && selected.toUpperCase() !== q.correctAnswer.toUpperCase()) {
+                        const wrongEl = document.getElementById(`test_${i}_${selected}`);
+                        if (wrongEl) wrongEl.classList.add('wrong-answer');
+                    }
                 }
             });
 
@@ -2665,6 +3072,7 @@
         // ---- Review Mode (in Study tab) ----
 
         function startReviewMode(set) {
+            document.getElementById('studyOptionsBar').style.display = 'none';
             document.getElementById('sessionProgress').style.display = 'none';
             document.getElementById('studyNav').style.display = 'none';
             document.getElementById('testSubmitArea').style.display = 'none';
@@ -2702,8 +3110,14 @@
                 if (filter === 'mastered' && p.mastery !== 'mastered') return false;
 
                 if (search && !q.question.toLowerCase().includes(search)) {
-                    const optMatch = q.options.some(o => o.text.toLowerCase().includes(search));
-                    if (!optMatch) return false;
+                    if (isShortAnswer(q)) {
+                        const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : (q.correctAnswer ? [q.correctAnswer] : []);
+                        const ansMatch = answers.some(a => a.toLowerCase().includes(search));
+                        if (!ansMatch) return false;
+                    } else {
+                        const optMatch = (q.options || []).some(o => o.text.toLowerCase().includes(search));
+                        if (!optMatch) return false;
+                    }
                 }
 
                 return true;
@@ -2738,18 +3152,25 @@
                             </button>
                         </div>
                     </div>
-                    <div class="question-text">${escapeHtml(q.question)}</div>
-                    <div class="mc-options">`;
+                    <div class="question-text">${escapeHtml(q.question)}</div>`;
 
-                q.options.forEach(opt => {
-                    const isCorrect = q.correctAnswer && q.correctAnswer.toUpperCase() === opt.letter.toUpperCase();
-                    html += `<div class="mc-option${isCorrect ? ' correct-answer' : ''}" style="cursor: default;">
-                        <div class="option-letter">${escapeHtml(opt.letter)}</div>
-                        <div class="option-text">${escapeHtml(opt.text)}</div>
+                if (isShortAnswer(q)) {
+                    const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : (q.correctAnswer ? [q.correctAnswer] : []);
+                    html += `<div style="padding: 0.75rem 1rem; border: 2px solid var(--correct-border); border-radius: 8px; background: var(--correct-bg); font-weight: 600;">
+                        Answer: ${answers.length > 0 ? escapeHtml(answers.join(' or ')) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}
                     </div>`;
-                });
+                } else {
+                    html += `<div class="mc-options">`;
+                    q.options.forEach(opt => {
+                        const isCorrect = q.correctAnswer && q.correctAnswer.toUpperCase() === opt.letter.toUpperCase();
+                        html += `<div class="mc-option${isCorrect ? ' correct-answer' : ''}" style="cursor: default;">
+                            <div class="option-letter">${escapeHtml(opt.letter)}</div>
+                            <div class="option-text">${escapeHtml(opt.text)}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
 
-                html += '</div>';
                 if (q.explanation) {
                     html += `<div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.75rem; padding: 0.5rem; background: var(--hover-bg); border-radius: 6px;">
                         ${escapeHtml(q.explanation)}</div>`;
@@ -2780,6 +3201,7 @@
             sessionState.currentIndex = 0;
 
             // Hide default nav elements - flashcards use their own
+            document.getElementById('studyOptionsBar').style.display = 'none';
             document.getElementById('sessionProgress').style.display = 'none';
             document.getElementById('studyNav').style.display = 'none';
             document.getElementById('testSubmitArea').style.display = 'none';
@@ -2814,14 +3236,21 @@
                         </button>
                     </div>
                     <div class="fc-card-body" id="fcFront">
-                        <div class="fc-question-text">${escapeHtml(q.question)}</div>
-                        <div class="fc-options-list">`;
+                        <div class="fc-question-text">${escapeHtml(q.question)}</div>`;
 
-            q.options.forEach(opt => {
-                html += `<div class="fc-option-item">${escapeHtml(opt.letter)}: ${escapeHtml(opt.text)}</div>`;
-            });
+            if (isShortAnswer(q)) {
+                html += `<div class="fc-options-list">
+                    <div class="fc-option-item" style="font-style: italic; color: var(--text-secondary);">Short Answer</div>
+                </div>`;
+            } else {
+                html += `<div class="fc-options-list">`;
+                q.options.forEach(opt => {
+                    html += `<div class="fc-option-item">${escapeHtml(opt.letter)}: ${escapeHtml(opt.text)}</div>`;
+                });
+                html += `</div>`;
+            }
 
-            html += `</div>
+            html += `
                     </div>
                     <div class="fc-answer-body" id="fcBack" style="display: none;">
                         <div class="fc-answer-text">${escapeHtml(getAnswerText(q) || 'No answer key')}</div>
@@ -2944,16 +3373,23 @@
             set.questions.forEach((q, i) => {
                 const p = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
 
-                let optionsHtml = '';
-                (q.options || []).forEach(opt => {
-                    optionsHtml += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
-                });
+                let detailHtml = '';
+                if (isShortAnswer(q)) {
+                    const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : (q.correctAnswer ? [q.correctAnswer] : []);
+                    detailHtml = answers.length > 0
+                        ? `<span style="font-style: italic; color: var(--text-secondary);">Answer: ${escapeHtml(answers.join(' or '))}</span>`
+                        : '';
+                } else {
+                    (q.options || []).forEach(opt => {
+                        detailHtml += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
+                    });
+                }
 
                 html += `<tr>
                     <td style="text-align: center; font-weight: 600; vertical-align: top; padding-top: 1rem;">${q.number || (i + 1)}</td>
                     <td>
                         <div class="flashcard-q-text" style="margin-bottom: 0.25rem;">${escapeHtml(q.question)}</div>
-                        <div class="flashcard-options-list">${optionsHtml}</div>
+                        <div class="flashcard-options-list">${detailHtml}</div>
                     </td>
                     <td style="text-align: center; color: var(--correct-border); font-weight: 600; vertical-align: top; padding-top: 1rem;">${p.correct || 0}</td>
                     <td style="text-align: center; color: var(--incorrect-border); font-weight: 600; vertical-align: top; padding-top: 1rem;">${p.wrong || 0}</td>
@@ -2991,7 +3427,7 @@
                 const rowData = [];
                 rowData.push(q.number || '');
                 rowData.push(q.question || '');
-                rowData.push(q.correctAnswer || '');
+                rowData.push(Array.isArray(q.correctAnswer) ? q.correctAnswer.join(' or ') : (q.correctAnswer || ''));
                 rowData.push(q.explanation || '');
 
                 const optionsMap = new Map();
@@ -3093,11 +3529,14 @@
         // INITIALIZATION
         // ============================================
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadState();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadState();
             loadParsedQuestions();
             loadImportTab();
             setupDropZone();
+
+            // Show sync UI if enabled
+            updateSyncUI();
 
             // Handle OAuth hash redirect
             const hash = window.location.hash.replace('#', '').replace('Tab', '');
