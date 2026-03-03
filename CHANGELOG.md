@@ -4,6 +4,54 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [4.0.0] - 2026-03-03
+
+### Added
+- **Card Editor (Quizlet-style)**:
+    - "Edit Cards" button on saved set viewer toggles edit mode.
+    - Edit question text, answer, options, and explanation inline.
+    - Delete individual cards with confirmation.
+    - Add new MC or Short Answer cards manually.
+    - Drag-and-drop reorder cards — grab the handle and drag to any position.
+- **Hint System**:
+    - Hint button on Learn and Flashcard modes.
+    - MC hints eliminate half the wrong options. SA hints show first letter and length.
+    - Half-punishment: using a hint and answering correctly counts as 0.5 wrong for mastery.
+    - Keyboard shortcut: press `H` to use hint.
+- **Review Visibility Filters**:
+    - Replaced dropdown with filter chips: New, Learning, Familiar, Mastered.
+    - MC/Short Answer type filter chips.
+    - Starred Only toggle. All filters are combinable.
+- **Learn Mode Enhancements**:
+    - MC Only / SA Only / All type filter buttons in study options bar.
+    - Exclude Mastered toggle to skip mastered questions.
+    - Congratulations banner when all questions are mastered with option to start over.
+    - Reset Mastered to Learning button on summary screen.
+- **Progress Type Filter**:
+    - Dropdown to view All / Multiple Choice / Short Answer stats separately.
+    - Stats, mastery bar, and question breakdown table filter by selected type.
+    - Title changes to "Multiple Choice Mastery" or "Short Answer Mastery" when filtered.
+- **Generate from Notes**:
+    - New "Generate from Notes" import method.
+    - Paste raw study notes/textbook content and AI generates MC + SA questions.
+    - Separate server endpoint with tailored prompt.
+- **D2L Quiz Simulation**:
+    - Test mode redesigned to simulate a D2L (Brightspace) quiz.
+    - Left sidebar with numbered question navigation grid.
+    - "Saved" indicator per question when answered.
+    - 2-hour countdown timer with auto-submit.
+    - Color-coded nav items after grading (green=correct, red=wrong).
+- **Sticky Navigation**:
+    - Header, main tab bar, and study mode tabs stay pinned when scrolling.
+    - Dynamic offset calculation adjusts to actual element heights.
+- **Keyboard Shortcuts**:
+    - Arrow Left/Right: navigate questions in Learn/Flashcard mode.
+    - 1-4 or A-D: select MC options in Learn mode.
+    - Enter: submit answer. Space: flip flashcard.
+    - H: show hint. Arrow keys scroll between questions in Test mode.
+
+---
+
 ## [3.0.0] - 2026-03-03
 
 ### Added

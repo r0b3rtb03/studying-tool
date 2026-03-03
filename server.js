@@ -101,6 +101,108 @@ Return ONLY valid JSON, no markdown code fences, no explanation text. The format
 - If a question has blanks (___) but ALSO has multiple lettered options (A, B, C, D), treat it as type "mc".
 - IMPORTANT: A common academic format lists the answer on a single sub-item like "a. **Answer**" under each question. If a question only has ONE lettered sub-item (just "a.") containing the answer, this is NOT multiple choice - it is a short answer question. The "a." line is the answer, not a choice. Extract these as type "short_answer" with the answer text in the correctAnswer array.`;
 
+const GENERATE_SYSTEM_PROMPT = `You are a study question generator. Given raw study notes, textbook content, or lecture material, create a mix of multiple choice and short answer questions that test understanding of the key concepts.
+
+## RULES
+
+1. Generate questions that cover the most important concepts, facts, and definitions in the material.
+2. Create a mix of multiple choice (type "mc") and short answer / fill-in-the-blank (type "short_answer") questions.
+3. For multiple choice questions, create 4 options (A, B, C, D) where only one is correct. Make distractors plausible.
+4. For short answer questions, include all acceptable answers in the correctAnswer array.
+5. Always set the correctAnswer for generated questions.
+6. Generate roughly 1 question per major concept or key point (aim for 5-20 questions depending on material length).
+
+## OUTPUT FORMAT
+
+Return ONLY valid JSON, no markdown code fences. The format must be:
+
+[
+  {
+    "id": "q1",
+    "number": 1,
+    "type": "mc",
+    "question": "Generated question text",
+    "options": [
+      { "letter": "A", "text": "Option text" },
+      { "letter": "B", "text": "Option text" },
+      { "letter": "C", "text": "Option text" },
+      { "letter": "D", "text": "Option text" }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Brief explanation of why this is correct"
+  },
+  {
+    "id": "q2",
+    "number": 2,
+    "type": "short_answer",
+    "question": "The _____ is the powerhouse of the cell.",
+    "correctAnswer": ["mitochondria", "mitochondrion"],
+    "explanation": "Brief explanation"
+  }
+]`;
+
+app.post('/api/generate-questions', async (req, res) => {
+    try {
+        const { text } = req.body;
+
+        if (!text || !text.trim()) {
+            return res.status(400).json({ error: 'No text provided' });
+        }
+
+        const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': API_KEY,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                max_tokens: 16000,
+                system: GENERATE_SYSTEM_PROMPT,
+                messages: [{
+                    role: 'user',
+                    content: `Generate study questions (multiple choice and short answer) from the following notes/material:\n\n${text}`
+                }]
+            })
+        });
+
+        const data = await apiRes.json();
+
+        if (data.error) {
+            console.error('Anthropic API error:', JSON.stringify(data.error));
+            return res.status(500).json({
+                error: `API error: ${data.error.message || 'Unknown error'}`
+            });
+        }
+
+        if (data.content && data.content[0]?.text) {
+            let responseText = data.content[0].text.trim();
+            if (responseText.startsWith('```')) {
+                responseText = responseText
+                    .replace(/^```(?:json)?\n?/, '')
+                    .replace(/\n?```$/, '');
+            }
+
+            try {
+                const questions = JSON.parse(responseText);
+                res.json({ questions });
+            } catch {
+                console.error('Failed to parse generated questions:', responseText.substring(0, 200));
+                res.status(500).json({
+                    error: 'Failed to parse generated questions',
+                    raw: data.content[0].text
+                });
+            }
+        } else {
+            res.status(500).json({ error: 'Unexpected API response format' });
+        }
+    } catch (err) {
+        console.error('Generate request error:', err.message);
+        res.status(500).json({ error: `Request failed: ${err.message}` });
+    }
+});
+
 app.post('/api/parse-questions', async (req, res) => {
     try {
         const { text } = req.body;

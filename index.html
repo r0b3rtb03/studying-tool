@@ -78,6 +78,9 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .header h1 {
@@ -165,6 +168,9 @@
             background: var(--bg-secondary);
             border-bottom: 2px solid var(--border-color);
             box-shadow: 0 1px 4px var(--panel-shadow);
+            position: sticky;
+            top: var(--header-height, 58px);
+            z-index: 99;
         }
 
         .tab-buttons {
@@ -507,6 +513,11 @@
             margin-bottom: 1.5rem;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 0.5rem;
+            position: sticky;
+            top: var(--nav-offset, 108px);
+            z-index: 48;
+            background: var(--bg-primary);
+            padding-top: 0.5rem;
         }
 
         .mode-btn {
@@ -1436,6 +1447,163 @@
         .markdown-body strong { font-weight: 700; }
         .markdown-body a { color: var(--header-bg-start); text-decoration: none; }
         .markdown-body a:hover { text-decoration: underline; }
+
+        /* ============================================
+           CARD EDITOR
+           ============================================ */
+        .card-editor-item {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            background: var(--bg-secondary);
+            overflow: hidden;
+            transition: box-shadow 0.2s, opacity 0.2s;
+        }
+        .card-editor-item.dragging { opacity: 0.4; }
+        .card-editor-item.drag-over { border-top: 3px solid var(--header-bg-start); }
+        .card-editor-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 1rem;
+            background: var(--hover-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .drag-handle { cursor: grab; font-size: 1.1rem; color: var(--text-secondary); user-select: none; padding: 0.25rem; }
+        .drag-handle:active { cursor: grabbing; }
+        .card-editor-num { font-weight: 700; font-size: 0.85rem; color: var(--text-secondary); }
+        .card-editor-type {
+            font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 10px;
+            background: var(--info-bg); color: var(--text-secondary); font-weight: 600;
+        }
+        .card-editor-delete {
+            margin-left: auto; background: none; border: none; color: var(--incorrect-border);
+            cursor: pointer; font-size: 1.1rem; padding: 0.25rem 0.5rem; border-radius: 4px; opacity: 0.6; transition: opacity 0.2s;
+        }
+        .card-editor-delete:hover { opacity: 1; }
+        .card-editor-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .card-editor-field label { font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-secondary); }
+        .card-editor-field textarea { min-height: 60px; font-size: 0.9rem; }
+        .card-editor-field input[type="text"] { font-size: 0.9rem; }
+        .card-editor-options { display: flex; flex-direction: column; gap: 0.4rem; }
+        .card-editor-option { display: flex; align-items: center; gap: 0.5rem; }
+        .card-editor-option .opt-letter { font-weight: 700; font-size: 0.85rem; min-width: 20px; color: var(--text-secondary); }
+        .card-editor-option input[type="text"] { flex: 1; padding: 0.5rem 0.75rem; }
+        .card-editor-option .remove-opt { background: none; border: none; color: var(--incorrect-border); cursor: pointer; font-size: 1rem; padding: 0.1rem 0.3rem; opacity: 0.5; }
+        .card-editor-option .remove-opt:hover { opacity: 1; }
+        .add-card-area {
+            border: 2px dashed var(--border-color); border-radius: 10px; padding: 1.25rem;
+            text-align: center; cursor: pointer; transition: all 0.2s; margin-top: 0.75rem;
+            color: var(--text-secondary); font-weight: 600;
+        }
+        .add-card-area:hover { border-color: var(--header-bg-start); background: var(--hover-bg); color: var(--header-bg-start); }
+
+        /* ============================================
+           HINT BUTTON & TEXT
+           ============================================ */
+        .hint-btn {
+            background: none; border: 1.5px solid var(--border-color); padding: 0.3rem 0.75rem;
+            border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+            color: var(--text-secondary); transition: all 0.2s;
+        }
+        .hint-btn:hover { border-color: #f9a825; color: #f9a825; }
+        .hint-btn:disabled { opacity: 0.4; cursor: default; }
+        .hint-text {
+            margin-top: 0.5rem; padding: 0.5rem 0.85rem;
+            background: rgba(249,168,37,0.1); border: 1px solid rgba(249,168,37,0.3);
+            border-radius: 8px; font-size: 0.88rem; color: var(--text-primary); font-style: italic;
+        }
+
+        /* ============================================
+           REVIEW FILTER CHIPS
+           ============================================ */
+        .review-filter-row {
+            display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin-bottom: 0.6rem;
+        }
+        .review-filter-row .filter-label {
+            font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-right: 0.1rem;
+        }
+        .filter-chip {
+            display: inline-flex; align-items: center; font-size: 0.76rem; font-weight: 600;
+            cursor: pointer; padding: 0.2rem 0.55rem; border: 1.5px solid var(--border-color);
+            border-radius: 20px; transition: all 0.2s; user-select: none;
+        }
+        .filter-chip:hover { border-color: var(--header-bg-start); }
+        .filter-chip.active { background: var(--header-bg-start); color: white; border-color: var(--header-bg-start); }
+        .filter-sep { width: 1px; height: 1.2rem; background: var(--border-color); margin: 0 0.1rem; }
+
+        /* ============================================
+           D2L QUIZ SIMULATION
+           ============================================ */
+        .d2l-container { display: flex; gap: 0; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background: var(--bg-secondary); }
+        .d2l-sidebar {
+            width: 165px; min-width: 165px; border-right: 1px solid var(--border-color);
+            background: var(--hover-bg); padding: 0.75rem;
+            position: sticky; top: var(--nav-offset, 108px);
+            max-height: calc(100vh - var(--nav-offset, 108px));
+            overflow-y: auto; align-self: flex-start;
+        }
+        .d2l-sidebar-title { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .d2l-nav-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
+        .d2l-nav-item {
+            aspect-ratio: 1; border: 1.5px solid var(--border-color); border-radius: 6px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.78rem; font-weight: 700;
+            background: var(--bg-secondary); transition: all 0.15s; color: var(--text-primary);
+        }
+        .d2l-nav-item:hover { border-color: var(--header-bg-start); }
+        .d2l-nav-item.answered { background: var(--header-bg-start); color: white; border-color: var(--header-bg-start); }
+        .d2l-nav-item.current { box-shadow: 0 0 0 2px var(--header-bg-start); }
+        .d2l-nav-status { font-size: 0.5rem; font-weight: 400; margin-top: 1px; }
+        .d2l-main { flex: 1; padding: 1.25rem; min-width: 0; }
+        .d2l-quiz-header { background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; }
+        .d2l-quiz-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.35rem; }
+        .d2l-quiz-info { display: flex; gap: 1.5rem; font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; flex-wrap: wrap; }
+        .d2l-timer { color: var(--header-bg-start); font-weight: 700; }
+        .d2l-question { border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+        .d2l-question.d2l-correct { border-color: var(--correct-border); }
+        .d2l-question.d2l-incorrect { border-color: var(--incorrect-border); }
+        .d2l-question-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.6rem 1rem; background: var(--hover-bg); border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.88rem;
+        }
+        .d2l-question-points { font-size: 0.78rem; font-weight: 400; color: var(--text-secondary); }
+        .d2l-saved { font-size: 0.78rem; color: var(--correct-border); font-weight: 600; display: none; align-items: center; gap: 0.2rem; }
+        .d2l-saved.visible { display: inline-flex; }
+        .d2l-question-body { padding: 1rem; }
+        .d2l-question-body .question-text { margin-bottom: 0.75rem; }
+        .d2l-mc-option { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0; cursor: pointer; font-size: 0.92rem; }
+        .d2l-mc-option input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--header-bg-start); flex-shrink: 0; }
+        .d2l-mc-option label { cursor: pointer; font-weight: 400; margin-bottom: 0; }
+        .d2l-mc-option.d2l-opt-correct label { color: var(--correct-border); font-weight: 700; }
+        .d2l-mc-option.d2l-opt-wrong label { color: var(--incorrect-border); text-decoration: line-through; }
+        @media (max-width: 768px) {
+            .d2l-container { flex-direction: column; }
+            .d2l-sidebar { width: 100%; min-width: unset; position: relative; top: unset; max-height: none; border-right: none; border-bottom: 1px solid var(--border-color); }
+            .d2l-nav-grid { grid-template-columns: repeat(6, 1fr); }
+        }
+
+        /* ============================================
+           PROGRESS TYPE FILTER
+           ============================================ */
+        .progress-type-filter {
+            display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;
+        }
+        .progress-type-filter select { width: auto; min-width: 160px; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+        .progress-type-filter label { font-size: 0.85rem; font-weight: 600; margin-bottom: 0; white-space: nowrap; }
+
+        /* ============================================
+           CONGRATS BANNER
+           ============================================ */
+        .congrats-banner {
+            text-align: center; padding: 2.5rem 2rem;
+            background: linear-gradient(135deg, var(--correct-bg), var(--info-bg));
+            border: 2px solid var(--correct-border); border-radius: 16px; margin-bottom: 2rem;
+        }
+        .congrats-banner h2 { font-size: 1.8rem; color: var(--correct-border); margin-bottom: 0.5rem; }
+        .congrats-banner p { color: var(--text-secondary); font-size: 1rem; margin-top: 0.5rem; }
+
+        .kb-hint { font-size: 0.65rem; color: var(--text-secondary); opacity: 0.5; margin-left: 0.2rem; }
     </style>
 </head>
 <body>
@@ -1486,6 +1654,7 @@
             <div class="import-methods">
                 <button class="method-btn active" onclick="switchImportMethod('paste')">Paste Text</button>
                 <button class="method-btn" onclick="switchImportMethod('pdf')">Upload PDF</button>
+                <button class="method-btn" onclick="switchImportMethod('notes')">Generate from Notes</button>
             </div>
 
             <!-- Paste Text Method -->
@@ -1508,6 +1677,20 @@
                 </div>
                 <input type="file" id="pdfInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)">
                 <div id="pdfStatus" style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-secondary);"></div>
+            </div>
+
+            <!-- Generate from Notes Method -->
+            <div class="import-method" id="notesMethod">
+                <div class="info-box">
+                    Paste your study notes, textbook content, or lecture material and AI will automatically generate multiple choice and short answer questions from the key concepts.
+                </div>
+                <label for="notesInput">Paste your notes below:</label>
+                <textarea id="notesInput" placeholder="Paste lecture notes, textbook chapters, or study material here...&#10;&#10;The AI will generate questions based on the key concepts it identifies."></textarea>
+                <div style="margin-top: 1rem;">
+                    <button class="btn-primary" id="generateBtn" onclick="generateFromNotes()">
+                        Generate Questions
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1532,7 +1715,10 @@
             <div class="panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <div class="panel-title" style="margin-bottom: 0;" id="savedSetTitle">Questions</div>
-                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--header-bg-start);" id="savedSetCount"></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--header-bg-start);" id="savedSetCount"></span>
+                        <button class="btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.82rem;" onclick="toggleCardEditor()" id="editCardsBtn">Edit Cards</button>
+                    </div>
                 </div>
                 <div id="savedSetQuestions"></div>
             </div>
@@ -1561,9 +1747,15 @@
 
             <!-- Study options toolbar -->
             <div class="study-options-bar" id="studyOptionsBar">
+                <button class="study-option-btn active" id="typeFilterAll" onclick="setTypeFilter('all')">All</button>
+                <button class="study-option-btn" id="typeFilterMc" onclick="setTypeFilter('mc')">MC Only</button>
+                <button class="study-option-btn" id="typeFilterSa" onclick="setTypeFilter('sa')">SA Only</button>
+                <div class="study-options-divider"></div>
                 <button class="study-option-btn" onclick="shuffleLearnQuestions()">Shuffle Questions</button>
                 <button class="study-option-btn" onclick="shuffleLearnOptions()">Shuffle Options</button>
                 <button class="study-option-btn" onclick="orderLearnQuestions()">Put in Order</button>
+                <div class="study-options-divider"></div>
+                <button class="study-option-btn" id="excludeMasteredBtn" onclick="toggleExcludeMastered()">Exclude Mastered</button>
             </div>
 
             <!-- Session progress -->
@@ -1622,7 +1814,7 @@
         </div>
 
         <div class="panel">
-            <div class="panel-title">Overall Mastery</div>
+            <div class="panel-title" id="masteryTitle">Overall Mastery</div>
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div class="progress-bar-container" style="flex: 1; height: 12px;">
                     <div class="progress-bar-fill" id="masteryBar" style="width: 0%"></div>
@@ -1634,7 +1826,17 @@
         <div id="progressSetsArea"></div>
 
         <div class="panel">
-            <div class="panel-title">Question Breakdown</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                <div class="panel-title" style="margin-bottom: 0;">Question Breakdown</div>
+                <div class="progress-type-filter">
+                    <label for="progressTypeFilter">Show:</label>
+                    <select id="progressTypeFilter" onchange="loadProgressTab()">
+                        <option value="all">All</option>
+                        <option value="mc">Multiple Choice</option>
+                        <option value="sa">Short Answer</option>
+                    </select>
+                </div>
+            </div>
             <div style="overflow-x: auto;">
                 <table class="progress-table">
                     <thead>
@@ -1767,10 +1969,12 @@
             sessionWrong: 0,
             testAnswers: {},
             currentMode: 'learn',
-            learnAnswers: {}, // track selected/submitted answers per question index
+            learnAnswers: {},
             shuffleQuestions: false,
             shuffleAnswers: false,
-            shuffledOptionsMap: {} // { questionIndex: [shuffled option indices] }
+            shuffledOptionsMap: {},
+            typeFilter: 'all',
+            excludeMastered: false
         };
 
         let learnSessionCache = {};
@@ -1975,7 +2179,7 @@
             document.querySelectorAll('.method-btn').forEach(el => el.classList.remove('active'));
 
             document.getElementById(method + 'Method').classList.add('active');
-            const methods = ['paste', 'pdf'];
+            const methods = ['paste', 'pdf', 'notes'];
             const btns = document.querySelectorAll('.method-btn');
             const idx = methods.indexOf(method);
             if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
@@ -2207,6 +2411,7 @@
 
             if (!set || set.questions.length === 0) {
                 viewer.style.display = 'none';
+                cardEditorActive = false;
                 return;
             }
 
@@ -2214,27 +2419,38 @@
             document.getElementById('savedSetCount').textContent =
                 `${set.questions.length} question${set.questions.length !== 1 ? 's' : ''}`;
 
+            // Update edit button text
+            const editBtn = document.getElementById('editCardsBtn');
+            if (editBtn) editBtn.textContent = cardEditorActive ? 'Done Editing' : 'Edit Cards';
+
             let html = '';
-            set.questions.forEach((q, i) => {
-                const answerText = getAnswerText(q);
-                const typeLabel = isShortAnswer(q) ? ' <span style="font-size:0.75rem; color: var(--text-secondary); font-weight:400;">(Short Answer)</span>' : '';
-                html += `<div class="flashcard-item">
-                    <div class="flashcard-left">
-                        <div class="flashcard-q-num"><strong>Question ${q.number || (i + 1)}</strong>${typeLabel}</div>
-                        <div class="flashcard-q-text">${escapeHtml(q.question)}</div>`;
-                if (!isShortAnswer(q)) {
-                    html += `<div class="flashcard-options-list">`;
-                    (q.options || []).forEach(opt => {
-                        html += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
-                    });
-                    html += `</div>`;
-                }
-                html += `</div>
-                    <div class="flashcard-right">
-                        <div>${answerText ? escapeHtml(answerText) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}</div>
-                    </div>
-                </div>`;
-            });
+
+            if (cardEditorActive) {
+                // Card editor mode
+                html = renderCardEditor(set);
+            } else {
+                // Normal view mode
+                set.questions.forEach((q, i) => {
+                    const answerText = getAnswerText(q);
+                    const typeLabel = isShortAnswer(q) ? ' <span style="font-size:0.75rem; color: var(--text-secondary); font-weight:400;">(Short Answer)</span>' : '';
+                    html += `<div class="flashcard-item">
+                        <div class="flashcard-left">
+                            <div class="flashcard-q-num"><strong>Question ${q.number || (i + 1)}</strong>${typeLabel}</div>
+                            <div class="flashcard-q-text">${escapeHtml(q.question)}</div>`;
+                    if (!isShortAnswer(q)) {
+                        html += `<div class="flashcard-options-list">`;
+                        (q.options || []).forEach(opt => {
+                            html += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += `</div>
+                        <div class="flashcard-right">
+                            <div>${answerText ? escapeHtml(answerText) : '<span style="color: var(--text-secondary); font-weight: 400;">No answer key</span>'}</div>
+                        </div>
+                    </div>`;
+                });
+            }
 
             document.getElementById('savedSetQuestions').innerHTML = html;
             viewer.style.display = 'block';
@@ -2422,6 +2638,9 @@
         }
 
         function switchStudyMode(mode) {
+            // Clean up D2L timer when switching away from test
+            if (d2lTimer) { clearInterval(d2lTimer); d2lTimer = null; }
+
             sessionState.currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
             const modes = ['learn', 'test', 'review', 'flashcards'];
@@ -2433,6 +2652,9 @@
         }
 
         function startStudySession() {
+            // Clean up any running timer
+            if (d2lTimer) { clearInterval(d2lTimer); d2lTimer = null; }
+
             const set = appState.questionSets[appState.activeSetId];
             if (!set || set.questions.length === 0) {
                 document.getElementById('studyArea').innerHTML =
@@ -2479,7 +2701,32 @@
 
             const masteryOrder = { 'new': 0, 'learning': 1, 'familiar': 2, 'mastered': 3 };
 
-            sessionState.questionOrder = questions.map((_, i) => i);
+            // Filter by type
+            const typeFilter = sessionState.typeFilter || 'all';
+            let indices = questions.map((_, i) => i);
+            if (typeFilter === 'mc') {
+                indices = indices.filter(i => !isShortAnswer(questions[i]));
+            } else if (typeFilter === 'sa') {
+                indices = indices.filter(i => isShortAnswer(questions[i]));
+            }
+
+            // Filter out mastered if enabled
+            if (sessionState.excludeMastered) {
+                indices = indices.filter(i => {
+                    const p = progress[questions[i].id];
+                    return !p || p.mastery !== 'mastered';
+                });
+            }
+
+            // If all filtered out, show everything
+            if (indices.length === 0) {
+                indices = questions.map((_, i) => i);
+                if (typeFilter === 'mc') indices = indices.filter(i => !isShortAnswer(questions[i]));
+                else if (typeFilter === 'sa') indices = indices.filter(i => isShortAnswer(questions[i]));
+                if (indices.length === 0) indices = questions.map((_, i) => i);
+            }
+
+            sessionState.questionOrder = indices;
             sessionState.questionOrder.sort((a, b) => {
                 const pa = progress[questions[a].id] || { mastery: 'new', wrong: 0 };
                 const pb = progress[questions[b].id] || { mastery: 'new', wrong: 0 };
@@ -2496,6 +2743,12 @@
             document.getElementById('studyNav').style.display = 'flex';
             document.getElementById('testSubmitArea').style.display = 'none';
             document.getElementById('testResults').style.display = 'none';
+
+            // Sync type filter button states
+            document.getElementById('typeFilterAll').classList.toggle('active', sessionState.typeFilter === 'all');
+            document.getElementById('typeFilterMc').classList.toggle('active', sessionState.typeFilter === 'mc');
+            document.getElementById('typeFilterSa').classList.toggle('active', sessionState.typeFilter === 'sa');
+            document.getElementById('excludeMasteredBtn').classList.toggle('active', sessionState.excludeMastered);
 
             renderLearnQuestion();
         }
@@ -2567,18 +2820,27 @@
             document.getElementById('sessionProgressBar').style.width =
                 `${((sessionState.currentIndex + 1) / total) * 100}%`;
 
+            const hintUsed = answer && answer.hintUsed;
+            const hintText = hintUsed ? answer.hintText : null;
+
             let html = `<div class="question-card" id="currentCard">
                 <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div class="question-number">
                         <strong>Question ${q.number || (qIdx + 1)}</strong>
                         <span class="mastery-badge mastery-${prog.mastery}">${prog.mastery}</span>
                     </div>
-                    <button class="star-btn ${prog.starred ? 'starred' : ''}"
-                            onclick="toggleStar('${q.id}')">
-                        ${prog.starred ? '\u2605' : '\u2606'}
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        ${!isSubmitted && q.correctAnswer ? `<button class="hint-btn" onclick="useHint()" ${hintUsed ? 'disabled' : ''}>
+                            ${hintUsed ? 'Hint Used' : 'Hint'}
+                        </button>` : ''}
+                        <button class="star-btn ${prog.starred ? 'starred' : ''}"
+                                onclick="toggleStar('${q.id}')">
+                            ${prog.starred ? '\u2605' : '\u2606'}
+                        </button>
+                    </div>
                 </div>
-                <div class="question-text">${escapeHtml(q.question)}</div>`;
+                <div class="question-text">${escapeHtml(q.question)}</div>
+                ${hintText ? `<div class="hint-text">${escapeHtml(hintText)}</div>` : ''}`;
 
             if (isShortAnswer(q)) {
                 // Short answer / fill-in-the-blank
@@ -2728,6 +2990,10 @@
                 if (isCorrect) {
                     prog.correct++;
                     sessionState.sessionCorrect++;
+                    // If hint was used, add half-wrong penalty
+                    if (answer.hintUsed) {
+                        prog.hints = (prog.hints || 0) + 1;
+                    }
                     appState.currentStreak++;
                     if (appState.currentStreak > appState.bestStreak) {
                         appState.bestStreak = appState.currentStreak;
@@ -2786,7 +3052,8 @@
         }
 
         function calculateMastery(prog) {
-            const total = prog.correct + prog.wrong;
+            const effectiveWrong = (prog.wrong || 0) + (prog.hints || 0) * 0.5;
+            const total = (prog.correct || 0) + effectiveWrong;
             if (total === 0) return 'new';
             const ratio = prog.correct / total;
             if (prog.correct >= 3 && ratio >= 0.85) return 'mastered';
@@ -2856,10 +3123,30 @@
             ];
             const randomMessage = encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)];
 
-            let html = `
-            <div class="learn-summary">
+            const allMastered = setProgress === 100;
+
+            let html = `<div class="learn-summary">`;
+
+            // Congratulations banner when all mastered
+            if (allMastered) {
+                html += `
+                <div class="congrats-banner">
+                    <h2>Congratulations!</h2>
+                    <p>You've mastered all ${totalQuestions} questions in this set. You're ready!</p>
+                    <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="resetAllToLearning()" style="font-size: 1rem; padding: 0.7rem 1.5rem;">
+                            Start Over (Reset All)
+                        </button>
+                        <button class="btn-secondary" onclick="continueStudying()">
+                            Go Through Again
+                        </button>
+                    </div>
+                </div>`;
+            }
+
+            html += `
                 <div class="summary-header" style="font-size: 2rem; margin-bottom: 1.5rem; font-weight: 700;">${randomMessage}</div>
-                
+
                 <div class="session-progress" style="display: block; margin-bottom: 2rem; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
                     <div class="session-progress-header">
                         <span>Total Set Progress</span>
@@ -2882,10 +3169,13 @@
                     </div>
                 </div>
 
-                <div style="text-align: center; margin-bottom: 3rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
                     <button class="btn-primary" onclick="continueStudying()" style="font-size: 1.1rem; padding: 0.8rem 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                         Continue Studying
                     </button>
+                    ${masteredCount > 0 && !allMastered ? `<button class="btn-secondary" onclick="resetMasteredToLearning()">
+                        Reset Mastered (${masteredCount}) to Learning
+                    </button>` : ''}
                 </div>
 
             `;
@@ -2983,87 +3273,147 @@
 
         // ---- Test Mode ----
 
+        let d2lTimer = null;
+        let d2lTimeLeft = 7200; // 2 hours in seconds
+
         function startTestMode(set) {
             sessionState.testAnswers = {};
             sessionState.questionOrder = set.questions.map((_, i) => i);
 
             document.getElementById('studyOptionsBar').style.display = 'none';
-            document.getElementById('sessionProgress').style.display = 'block';
+            document.getElementById('sessionProgress').style.display = 'none';
             document.getElementById('studyNav').style.display = 'none';
-            document.getElementById('testSubmitArea').style.display = 'block';
+            document.getElementById('testSubmitArea').style.display = 'none';
             document.getElementById('testResults').style.display = 'none';
 
-            document.getElementById('sessionProgressText').textContent =
-                `Test: ${set.questions.length} questions`;
-            document.getElementById('sessionScore').textContent = '';
-            document.getElementById('sessionProgressBar').style.width = '0%';
+            // Reset timer
+            d2lTimeLeft = 7200;
+            if (d2lTimer) clearInterval(d2lTimer);
 
-            let html = '';
+            const setName = set.name || 'Quiz';
+            const qCount = set.questions.length;
+
+            // Build sidebar nav
+            let navHtml = '';
             set.questions.forEach((q, i) => {
-                html += `<div class="question-card" id="testCard_${i}">
-                    <div class="question-number"><strong>Question ${q.number || (i + 1)}</strong></div>
-                    <div class="question-text">${escapeHtml(q.question)}</div>`;
-
-                if (isShortAnswer(q)) {
-                    html += `<div class="short-answer-area">
-                        <input type="text" class="short-answer-input" id="test_sa_${i}"
-                               placeholder="Type your answer..."
-                               oninput="updateTestShortAnswer(${i}, this.value)">
-                    </div>`;
-                } else {
-                    html += `<div class="mc-options">`;
-                    q.options.forEach(opt => {
-                        html += `<div class="mc-option" onclick="selectTestAnswer(${i}, '${escapeAttr(opt.letter)}')"
-                                     id="test_${i}_${opt.letter}">
-                            <div class="option-letter">${escapeHtml(opt.letter)}</div>
-                            <div class="option-text">${escapeHtml(opt.text)}</div>
-                        </div>`;
-                    });
-                    html += `</div>`;
-                }
-
-                html += `</div>`;
+                navHtml += `<div class="d2l-nav-item" id="d2lNav_${i}" onclick="scrollToD2lQuestion(${i})">
+                    <span>${i + 1}</span>
+                    <span class="d2l-nav-status" id="d2lNavStatus_${i}">--</span>
+                </div>`;
             });
 
+            // Build questions
+            let questionsHtml = '';
+            set.questions.forEach((q, i) => {
+                const typeLabel = isShortAnswer(q) ? ' (Short Answer)' : '';
+                questionsHtml += `<div class="d2l-question" id="d2lQ_${i}">
+                    <div class="d2l-question-header">
+                        <span>Question ${i + 1}${typeLabel} <span class="d2l-question-points">(1 point)</span></span>
+                        <span class="d2l-saved" id="d2lSaved_${i}">&#10003; Saved</span>
+                    </div>
+                    <div class="d2l-question-body">
+                        <div class="question-text">${escapeHtml(q.question)}</div>`;
+
+                if (isShortAnswer(q)) {
+                    questionsHtml += `<div class="short-answer-area">
+                        <input type="text" class="short-answer-input" id="test_sa_${i}"
+                               placeholder="Type your answer..."
+                               oninput="d2lAnswer(${i}, this.value, 'sa')">
+                    </div>`;
+                } else {
+                    (q.options || []).forEach(opt => {
+                        questionsHtml += `<div class="d2l-mc-option" id="d2lOpt_${i}_${opt.letter}" onclick="d2lAnswer(${i}, '${escapeAttr(opt.letter)}', 'mc')">
+                            <input type="radio" name="d2l_q${i}" id="d2lRadio_${i}_${opt.letter}">
+                            <label for="d2lRadio_${i}_${opt.letter}">${escapeHtml(opt.letter)}. ${escapeHtml(opt.text)}</label>
+                        </div>`;
+                    });
+                }
+
+                questionsHtml += `</div></div>`;
+            });
+
+            let html = `<div class="d2l-container">
+                <div class="d2l-sidebar">
+                    <div class="d2l-sidebar-title">Page 1:</div>
+                    <div class="d2l-nav-grid">${navHtml}</div>
+                </div>
+                <div class="d2l-main">
+                    <div class="d2l-quiz-header">
+                        <div class="d2l-quiz-title">${escapeHtml(setName)}</div>
+                        <div class="d2l-quiz-info">
+                            <span>Time Limit: 2:00:00</span>
+                            <span>Time Left: <span class="d2l-timer" id="d2lTimerDisplay">2:00:00</span></span>
+                            <span>${qCount} Questions</span>
+                        </div>
+                    </div>
+                    ${questionsHtml}
+                    <div style="text-align: center; margin-top: 1.5rem; padding-bottom: 1rem;">
+                        <button class="btn-primary" onclick="submitTest()" style="font-size: 1.05rem; padding: 0.8rem 2rem;">
+                            Submit Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+
             document.getElementById('studyArea').innerHTML = html;
+
+            // Start timer
+            d2lTimer = setInterval(() => {
+                d2lTimeLeft--;
+                if (d2lTimeLeft <= 0) {
+                    clearInterval(d2lTimer);
+                    submitTest();
+                    return;
+                }
+                const h = Math.floor(d2lTimeLeft / 3600);
+                const m = Math.floor((d2lTimeLeft % 3600) / 60);
+                const s = d2lTimeLeft % 60;
+                const display = document.getElementById('d2lTimerDisplay');
+                if (display) display.textContent = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            }, 1000);
         }
 
-        function selectTestAnswer(questionIndex, letter) {
-            const set = appState.questionSets[appState.activeSetId];
-
-            // Deselect previous
-            const prev = sessionState.testAnswers[questionIndex];
-            if (prev) {
-                const prevEl = document.getElementById(`test_${questionIndex}_${prev}`);
-                if (prevEl) prevEl.classList.remove('selected');
-            }
-
-            // Select new
-            sessionState.testAnswers[questionIndex] = letter;
-            const el = document.getElementById(`test_${questionIndex}_${letter}`);
-            if (el) el.classList.add('selected');
-
-            updateTestProgress(set);
-        }
-
-        function updateTestShortAnswer(questionIndex, value) {
-            const set = appState.questionSets[appState.activeSetId];
-            if (value.trim()) {
-                sessionState.testAnswers[questionIndex] = value;
+        function d2lAnswer(idx, value, type) {
+            if (type === 'mc') {
+                sessionState.testAnswers[idx] = value;
+                // Check radio
+                const radio = document.getElementById(`d2lRadio_${idx}_${value}`);
+                if (radio) radio.checked = true;
             } else {
-                delete sessionState.testAnswers[questionIndex];
+                if (value.trim()) {
+                    sessionState.testAnswers[idx] = value;
+                } else {
+                    delete sessionState.testAnswers[idx];
+                }
             }
-            updateTestProgress(set);
+
+            // Update nav
+            const navItem = document.getElementById(`d2lNav_${idx}`);
+            const navStatus = document.getElementById(`d2lNavStatus_${idx}`);
+            const saved = document.getElementById(`d2lSaved_${idx}`);
+            if (sessionState.testAnswers[idx] !== undefined) {
+                if (navItem) navItem.classList.add('answered');
+                if (navStatus) navStatus.textContent = '\u2713';
+                if (saved) saved.classList.add('visible');
+            } else {
+                if (navItem) navItem.classList.remove('answered');
+                if (navStatus) navStatus.textContent = '--';
+                if (saved) saved.classList.remove('visible');
+            }
         }
 
-        function updateTestProgress(set) {
-            const answered = Object.keys(sessionState.testAnswers).length;
-            const total = set.questions.length;
-            document.getElementById('sessionProgressBar').style.width =
-                `${(answered / total) * 100}%`;
-            document.getElementById('sessionScore').textContent =
-                `${answered} of ${total} answered`;
+        function scrollToD2lQuestion(idx) {
+            const el = document.getElementById(`d2lQ_${idx}`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Highlight current
+            document.querySelectorAll('.d2l-nav-item').forEach(n => n.classList.remove('current'));
+            const nav = document.getElementById(`d2lNav_${idx}`);
+            if (nav) nav.classList.add('current');
         }
+
+        // Legacy wrappers (unused with D2L layout but kept for safety)
+        function selectTestAnswer(questionIndex, letter) { d2lAnswer(questionIndex, letter, 'mc'); }
+        function updateTestShortAnswer(questionIndex, value) { d2lAnswer(questionIndex, value, 'sa'); }
 
         function submitTest() {
             const set = appState.questionSets[appState.activeSetId];
@@ -3073,6 +3423,9 @@
             if (unanswered > 0) {
                 if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
             }
+
+            // Stop timer
+            if (d2lTimer) { clearInterval(d2lTimer); d2lTimer = null; }
 
             let correct = 0;
             let wrong = 0;
@@ -3086,10 +3439,9 @@
                 }
                 set.progress[q.id].lastSeen = Date.now();
 
-                const card = document.getElementById(`testCard_${i}`);
+                const card = document.getElementById(`d2lQ_${i}`);
 
                 if (isShortAnswer(q)) {
-                    // Short answer grading
                     const saInput = document.getElementById(`test_sa_${i}`);
                     if (saInput) saInput.disabled = true;
 
@@ -3098,12 +3450,12 @@
                         if (isCorrect) {
                             set.progress[q.id].correct++;
                             correct++;
-                            if (card) card.classList.add('correct');
+                            if (card) card.classList.add('d2l-correct');
                             if (saInput) saInput.classList.add('correct');
                         } else {
                             set.progress[q.id].wrong++;
                             wrong++;
-                            if (card) card.classList.add('incorrect');
+                            if (card) card.classList.add('d2l-incorrect');
                             if (saInput) saInput.classList.add('incorrect');
                         }
                         set.progress[q.id].mastery = calculateMastery(set.progress[q.id]);
@@ -3111,72 +3463,87 @@
                         noKey++;
                     }
 
-                    // Show correct answer below the input
                     if (q.correctAnswer) {
                         const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
                         const feedbackDiv = document.createElement('div');
-                        feedbackDiv.className = selected && checkShortAnswer(q, selected)
-                            ? 'feedback correct' : 'feedback incorrect';
-                        feedbackDiv.textContent = selected && checkShortAnswer(q, selected)
-                            ? 'Correct!'
-                            : `Correct answer: ${answers.join(' or ')}`;
-                        card.appendChild(feedbackDiv);
+                        feedbackDiv.className = selected && checkShortAnswer(q, selected) ? 'feedback correct' : 'feedback incorrect';
+                        feedbackDiv.textContent = selected && checkShortAnswer(q, selected) ? 'Correct!' : `Correct answer: ${answers.join(' or ')}`;
+                        const body = card.querySelector('.d2l-question-body');
+                        if (body) body.appendChild(feedbackDiv);
                     }
                 } else {
-                    // Multiple choice grading
                     if (selected && q.correctAnswer) {
                         const isCorrect = selected.toUpperCase() === q.correctAnswer.toUpperCase();
                         if (isCorrect) {
                             set.progress[q.id].correct++;
                             correct++;
-                            if (card) card.classList.add('correct');
+                            if (card) card.classList.add('d2l-correct');
                         } else {
                             set.progress[q.id].wrong++;
                             wrong++;
-                            if (card) card.classList.add('incorrect');
+                            if (card) card.classList.add('d2l-incorrect');
                         }
                         set.progress[q.id].mastery = calculateMastery(set.progress[q.id]);
                     } else if (!q.correctAnswer) {
                         noKey++;
                     }
 
-                    // Disable and highlight options
-                    document.querySelectorAll(`[id^="test_${i}_"]`).forEach(el => {
-                        el.classList.add('disabled');
-                        el.onclick = null;
+                    // Disable radio buttons and highlight
+                    document.querySelectorAll(`[id^="d2lOpt_${i}_"]`).forEach(el => {
+                        el.style.pointerEvents = 'none';
+                    });
+                    document.querySelectorAll(`[id^="d2lRadio_${i}_"]`).forEach(el => {
+                        el.disabled = true;
                     });
 
                     if (q.correctAnswer) {
-                        const correctEl = document.getElementById(`test_${i}_${q.correctAnswer}`);
-                        if (correctEl) correctEl.classList.add('correct-answer');
+                        const correctEl = document.getElementById(`d2lOpt_${i}_${q.correctAnswer}`);
+                        if (correctEl) correctEl.classList.add('d2l-opt-correct');
                     }
                     if (selected && q.correctAnswer && selected.toUpperCase() !== q.correctAnswer.toUpperCase()) {
-                        const wrongEl = document.getElementById(`test_${i}_${selected}`);
-                        if (wrongEl) wrongEl.classList.add('wrong-answer');
+                        const wrongEl = document.getElementById(`d2lOpt_${i}_${selected}`);
+                        if (wrongEl) wrongEl.classList.add('d2l-opt-wrong');
+                    }
+                }
+
+                // Update nav item
+                const navItem = document.getElementById(`d2lNav_${i}`);
+                if (navItem) {
+                    navItem.style.pointerEvents = 'none';
+                    if (selected && q.correctAnswer) {
+                        const wasCorrect = isShortAnswer(q) ? checkShortAnswer(q, selected) : selected.toUpperCase() === q.correctAnswer.toUpperCase();
+                        navItem.style.background = wasCorrect ? 'var(--correct-border)' : 'var(--incorrect-border)';
+                        navItem.style.borderColor = wasCorrect ? 'var(--correct-border)' : 'var(--incorrect-border)';
+                        navItem.style.color = 'white';
                     }
                 }
             });
 
             saveState();
 
-            document.getElementById('testSubmitArea').style.display = 'none';
-
             const gradeable = questions.length - noKey;
             const pct = gradeable > 0 ? Math.round((correct / gradeable) * 100) : 0;
 
-            document.getElementById('testResults').style.display = 'block';
-            document.getElementById('testResults').innerHTML = `
-                <div class="test-results">
-                    <div class="test-score ${pct >= 70 ? 'pass' : 'fail'}">${pct}%</div>
-                    <div style="font-size: 1.1rem; margin-top: 0.5rem;">
-                        ${correct} correct out of ${gradeable}
-                        ${wrong > 0 ? ` (${wrong} wrong)` : ''}
-                        ${noKey > 0 ? `<br><span style="font-size: 0.85rem; color: var(--text-secondary);">${noKey} questions had no answer key</span>` : ''}
-                    </div>
-                    <button class="btn-primary" onclick="startStudySession()" style="margin-top: 1.25rem;">
-                        Retake Test
-                    </button>
-                </div>`;
+            // Show results at top of quiz
+            const resultsHtml = `<div class="test-results" style="margin-bottom: 1.5rem;">
+                <div class="test-score ${pct >= 70 ? 'pass' : 'fail'}">${pct}%</div>
+                <div style="font-size: 1.1rem; margin-top: 0.5rem;">
+                    ${correct} correct out of ${gradeable}
+                    ${wrong > 0 ? ` (${wrong} wrong)` : ''}
+                    ${noKey > 0 ? `<br><span style="font-size: 0.85rem; color: var(--text-secondary);">${noKey} questions had no answer key</span>` : ''}
+                </div>
+                <button class="btn-primary" onclick="startStudySession()" style="margin-top: 1.25rem;">
+                    Retake Quiz
+                </button>
+            </div>`;
+
+            const d2lMain = document.querySelector('.d2l-main');
+            if (d2lMain) {
+                d2lMain.querySelector('.d2l-quiz-header').insertAdjacentHTML('afterend', resultsHtml);
+                // Remove submit button
+                const submitBtn = d2lMain.querySelector('button[onclick="submitTest()"]');
+                if (submitBtn) submitBtn.closest('div').remove();
+            }
         }
 
         // ---- Review Mode (in Study tab) ----
@@ -3190,13 +3557,19 @@
 
             let html = `<div class="review-controls">
                 <input type="text" id="reviewSearch" placeholder="Search questions..." oninput="filterReviewMode()">
-                <select id="reviewFilter" onchange="filterReviewMode()">
-                    <option value="all">All Questions</option>
-                    <option value="starred">Starred Only</option>
-                    <option value="wrong">Frequently Wrong</option>
-                    <option value="unseen">Not Yet Studied</option>
-                    <option value="mastered">Mastered</option>
-                </select>
+            </div>
+            <div class="review-filter-row">
+                <span class="filter-label">Mastery:</span>
+                <span class="filter-chip active" onclick="toggleFilterChip(this)" data-filter="new">New</span>
+                <span class="filter-chip active" onclick="toggleFilterChip(this)" data-filter="learning">Learning</span>
+                <span class="filter-chip active" onclick="toggleFilterChip(this)" data-filter="familiar">Familiar</span>
+                <span class="filter-chip active" onclick="toggleFilterChip(this)" data-filter="mastered">Mastered</span>
+                <span class="filter-sep"></span>
+                <span class="filter-label">Type:</span>
+                <span class="filter-chip active" onclick="toggleFilterChip(this)" data-filter="type-mc">MC</span>
+                <span class="filter-chip active" onclick="toggleFilterChip(this)" data-filter="type-sa">Short Answer</span>
+                <span class="filter-sep"></span>
+                <span class="filter-chip" onclick="toggleFilterChip(this)" data-filter="starred">Starred Only</span>
             </div>
             <div id="reviewModeContent"></div>`;
 
@@ -3204,20 +3577,46 @@
             filterReviewMode();
         }
 
+        function toggleFilterChip(el) {
+            el.classList.toggle('active');
+            filterReviewMode();
+        }
+
         function filterReviewMode() {
             const set = appState.questionSets[appState.activeSetId];
             if (!set) return;
 
-            const filter = document.getElementById('reviewFilter')?.value || 'all';
             const search = (document.getElementById('reviewSearch')?.value || '').toLowerCase();
 
-            const filtered = set.questions.filter((q) => {
-                const p = set.progress[q.id] || {};
+            // Get active filter chips
+            const chips = document.querySelectorAll('.review-filter-row .filter-chip');
+            const activeFilters = new Set();
+            chips.forEach(c => { if (c.classList.contains('active')) activeFilters.add(c.dataset.filter); });
 
-                if (filter === 'starred' && !p.starred) return false;
-                if (filter === 'wrong' && (p.wrong || 0) < 2) return false;
-                if (filter === 'unseen' && p.lastSeen) return false;
-                if (filter === 'mastered' && p.mastery !== 'mastered') return false;
+            const showNew = activeFilters.has('new');
+            const showLearning = activeFilters.has('learning');
+            const showFamiliar = activeFilters.has('familiar');
+            const showMastered = activeFilters.has('mastered');
+            const showMC = activeFilters.has('type-mc');
+            const showSA = activeFilters.has('type-sa');
+            const starredOnly = activeFilters.has('starred');
+
+            const filtered = set.questions.filter((q) => {
+                const p = set.progress[q.id] || { mastery: 'new' };
+                const mastery = p.mastery || 'new';
+
+                // Type filter
+                if (isShortAnswer(q) && !showSA) return false;
+                if (!isShortAnswer(q) && !showMC) return false;
+
+                // Mastery filter
+                if (mastery === 'new' && !showNew) return false;
+                if (mastery === 'learning' && !showLearning) return false;
+                if (mastery === 'familiar' && !showFamiliar) return false;
+                if (mastery === 'mastered' && !showMastered) return false;
+
+                // Starred filter
+                if (starredOnly && !p.starred) return false;
 
                 if (search && !q.question.toLowerCase().includes(search)) {
                     if (isShortAnswer(q)) {
@@ -3340,10 +3739,13 @@
                 <div class="fc-card" onclick="toggleFlashcardAnswer()">
                     <div class="fc-card-header">
                         <span class="mastery-badge mastery-${prog.mastery}" style="font-size: 0.65rem;">${prog.mastery}</span>
-                        <button class="star-btn ${prog.starred ? 'starred' : ''}"
-                                onclick="event.stopPropagation(); toggleStar('${q.id}')">
-                            ${prog.starred ? '\u2605' : '\u2606'}
-                        </button>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            ${q.correctAnswer ? `<button class="hint-btn" onclick="event.stopPropagation(); fcShowHint()" id="fcHintBtn" style="color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.3);">Hint</button>` : ''}
+                            <button class="star-btn ${prog.starred ? 'starred' : ''}"
+                                    onclick="event.stopPropagation(); toggleStar('${q.id}')">
+                                ${prog.starred ? '\u2605' : '\u2606'}
+                            </button>
+                        </div>
                     </div>
                     <div class="fc-card-body" id="fcFront">
                         <div class="fc-question-text">${escapeHtml(q.question)}</div>`;
@@ -3408,6 +3810,38 @@
             }
         }
 
+        function fcShowHint() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+            const qIdx = sessionState.questionOrder[sessionState.currentIndex];
+            const q = set.questions[qIdx];
+            const hint = getHintForQuestion(q);
+            if (!hint) return;
+
+            // Add hint penalty
+            if (!set.progress[q.id]) {
+                set.progress[q.id] = { correct: 0, wrong: 0, hints: 0, lastSeen: null, starred: false, mastery: 'new' };
+            }
+            set.progress[q.id].hints = (set.progress[q.id].hints || 0) + 1;
+            set.progress[q.id].mastery = calculateMastery(set.progress[q.id]);
+            saveState();
+
+            // Show hint on card
+            const front = document.getElementById('fcFront');
+            if (front) {
+                const hintDiv = document.createElement('div');
+                hintDiv.className = 'hint-text';
+                hintDiv.style.color = 'rgba(232,240,224,0.9)';
+                hintDiv.style.background = 'rgba(249,168,37,0.15)';
+                hintDiv.style.borderColor = 'rgba(249,168,37,0.3)';
+                hintDiv.textContent = hint;
+                front.appendChild(hintDiv);
+            }
+
+            const btn = document.getElementById('fcHintBtn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Hint Used'; }
+        }
+
         function shuffleFlashcards() {
             const array = sessionState.questionOrder;
             for (let i = array.length - 1; i > 0; i--) {
@@ -3435,6 +3869,7 @@
         function loadProgressTab() {
             const sets = appState.questionSets;
             const ids = Object.keys(sets);
+            const typeFilter = document.getElementById('progressTypeFilter')?.value || 'all';
 
             let totalQuestions = 0;
             let totalMastered = 0;
@@ -3443,11 +3878,18 @@
 
             ids.forEach(id => {
                 const set = sets[id];
-                totalQuestions += set.questions.length;
-                Object.values(set.progress).forEach(p => {
-                    if (p.mastery === 'mastered') totalMastered++;
-                    totalCorrect += (p.correct || 0);
-                    totalWrong += (p.wrong || 0);
+                set.questions.forEach(q => {
+                    // Filter by type
+                    if (typeFilter === 'mc' && isShortAnswer(q)) return;
+                    if (typeFilter === 'sa' && !isShortAnswer(q)) return;
+
+                    totalQuestions++;
+                    const p = set.progress[q.id];
+                    if (p) {
+                        if (p.mastery === 'mastered') totalMastered++;
+                        totalCorrect += (p.correct || 0);
+                        totalWrong += (p.wrong || 0);
+                    }
                 });
             });
 
@@ -3462,6 +3904,12 @@
             document.getElementById('masteryPercent').textContent = masteryPct + '%';
             document.getElementById('masteryBar').style.width = masteryPct + '%';
 
+            // Update mastery title
+            const masteryTitle = document.getElementById('masteryTitle');
+            if (typeFilter === 'mc') masteryTitle.textContent = 'Multiple Choice Mastery';
+            else if (typeFilter === 'sa') masteryTitle.textContent = 'Short Answer Mastery';
+            else masteryTitle.textContent = 'Overall Mastery';
+
             renderSetSelector('progressSetsArea', false);
             renderProgressTable();
         }
@@ -3470,6 +3918,7 @@
             const tbody = document.getElementById('progressTableBody');
             const set = appState.questionSets[appState.activeSetId];
             const exportBtn = document.getElementById('exportCsvBtn');
+            const typeFilter = document.getElementById('progressTypeFilter')?.value || 'all';
 
             if (!set) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No question set selected.</td></tr>';
@@ -3481,6 +3930,9 @@
 
             let html = '';
             set.questions.forEach((q, i) => {
+                // Filter by type
+                if (typeFilter === 'mc' && isShortAnswer(q)) return;
+                if (typeFilter === 'sa' && !isShortAnswer(q)) return;
                 const p = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
 
                 let detailHtml = '';
@@ -3591,6 +4043,437 @@
 
         function clearAllProgress() {
             document.getElementById('clearProgressConfirmModal').classList.add('active');
+        }
+
+        // ============================================
+        // HINT SYSTEM
+        // ============================================
+
+        function getHintForQuestion(q) {
+            if (!q.correctAnswer) return null;
+
+            if (isShortAnswer(q)) {
+                const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
+                const primary = answers[0];
+                if (primary.length <= 2) return `The answer has ${primary.length} character(s)`;
+                return `The answer starts with "${primary[0].toUpperCase()}" and has ${primary.length} characters`;
+            } else {
+                // MC: eliminate half the wrong options
+                if (!q.options || q.options.length < 3) return 'Think carefully about the options.';
+                const wrongOptions = q.options.filter(o => o.letter.toUpperCase() !== q.correctAnswer.toUpperCase());
+                const eliminateCount = Math.max(1, Math.floor(wrongOptions.length / 2));
+                const eliminated = shuffleArray([...wrongOptions]).slice(0, eliminateCount);
+                const eliminatedLetters = eliminated.map(o => o.letter).join(' and ');
+                return `You can eliminate option${eliminateCount > 1 ? 's' : ''} ${eliminatedLetters}`;
+            }
+        }
+
+        function useHint() {
+            if (!sessionState.learnAnswers[sessionState.currentIndex]) {
+                sessionState.learnAnswers[sessionState.currentIndex] = { selected: null, submitted: false };
+            }
+            const answer = sessionState.learnAnswers[sessionState.currentIndex];
+            if (answer.hintUsed || answer.submitted) return;
+
+            const set = appState.questionSets[appState.activeSetId];
+            const qIdx = sessionState.questionOrder[sessionState.currentIndex];
+            const q = set.questions[qIdx];
+
+            answer.hintUsed = true;
+            answer.hintText = getHintForQuestion(q);
+            renderLearnQuestion();
+        }
+
+        // ============================================
+        // CARD EDITOR
+        // ============================================
+
+        let cardEditorActive = false;
+
+        function toggleCardEditor() {
+            cardEditorActive = !cardEditorActive;
+            const btn = document.getElementById('editCardsBtn');
+            if (btn) btn.textContent = cardEditorActive ? 'Done Editing' : 'Edit Cards';
+            renderSavedSetViewer();
+        }
+
+        function renderCardEditor(set) {
+            let html = '';
+            set.questions.forEach((q, i) => {
+                const typeLabel = isShortAnswer(q) ? 'Short Answer' : 'Multiple Choice';
+                html += `<div class="card-editor-item" draggable="true"
+                              ondragstart="cardDragStart(event, ${i})"
+                              ondragover="cardDragOver(event, ${i})"
+                              ondragleave="cardDragLeave(event)"
+                              ondrop="cardDrop(event, ${i})"
+                              id="cardEditor_${i}">
+                    <div class="card-editor-header">
+                        <span class="drag-handle" title="Drag to reorder">&#9776;</span>
+                        <span class="card-editor-num">#${i + 1}</span>
+                        <span class="card-editor-type">${typeLabel}</span>
+                        <button class="card-editor-delete" onclick="deleteCard(${i})" title="Delete card">&times;</button>
+                    </div>
+                    <div class="card-editor-body">
+                        <div class="card-editor-field">
+                            <label>Question</label>
+                            <textarea onchange="editCardField(${i}, 'question', this.value)">${escapeHtml(q.question)}</textarea>
+                        </div>`;
+
+                if (isShortAnswer(q)) {
+                    const answers = Array.isArray(q.correctAnswer) ? q.correctAnswer : (q.correctAnswer ? [q.correctAnswer] : ['']);
+                    html += `<div class="card-editor-field">
+                        <label>Answer(s) — separate alternatives with commas</label>
+                        <input type="text" value="${escapeAttr(answers.join(', '))}"
+                               onchange="editCardAnswers(${i}, this.value)">
+                    </div>`;
+                } else {
+                    html += `<div class="card-editor-field">
+                        <label>Options</label>
+                        <div class="card-editor-options" id="cardOpts_${i}">`;
+                    (q.options || []).forEach((opt, oi) => {
+                        html += `<div class="card-editor-option">
+                            <span class="opt-letter">${opt.letter}.</span>
+                            <input type="text" value="${escapeAttr(opt.text)}"
+                                   onchange="editCardOption(${i}, ${oi}, this.value)">
+                            <button class="remove-opt" onclick="removeCardOption(${i}, ${oi})" title="Remove">&times;</button>
+                        </div>`;
+                    });
+                    html += `</div>
+                        <button class="btn-secondary" style="margin-top: 0.4rem; padding: 0.25rem 0.6rem; font-size: 0.78rem;" onclick="addCardOption(${i})">+ Option</button>
+                    </div>
+                    <div class="card-editor-field">
+                        <label>Correct Answer Letter</label>
+                        <input type="text" value="${escapeAttr(q.correctAnswer || '')}" style="width: 60px;"
+                               onchange="editCardField(${i}, 'correctAnswer', this.value.toUpperCase())">
+                    </div>`;
+                }
+
+                if (q.explanation !== undefined) {
+                    html += `<div class="card-editor-field">
+                        <label>Explanation (optional)</label>
+                        <input type="text" value="${escapeAttr(q.explanation || '')}"
+                               onchange="editCardField(${i}, 'explanation', this.value)">
+                    </div>`;
+                }
+
+                html += `</div></div>`;
+            });
+
+            // Add card buttons
+            html += `<div style="display: flex; gap: 0.75rem; margin-top: 0.75rem;">
+                <div class="add-card-area" style="flex: 1;" onclick="addNewCard('mc')">+ Add Multiple Choice</div>
+                <div class="add-card-area" style="flex: 1;" onclick="addNewCard('short_answer')">+ Add Short Answer</div>
+            </div>`;
+
+            return html;
+        }
+
+        let cardDragIdx = null;
+
+        function cardDragStart(e, idx) {
+            cardDragIdx = idx;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => {
+                const el = document.getElementById(`cardEditor_${idx}`);
+                if (el) el.classList.add('dragging');
+            }, 0);
+        }
+
+        function cardDragOver(e, idx) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const el = document.getElementById(`cardEditor_${idx}`);
+            if (el && cardDragIdx !== idx) el.classList.add('drag-over');
+        }
+
+        function cardDragLeave(e) {
+            e.target.closest('.card-editor-item')?.classList.remove('drag-over');
+        }
+
+        function cardDrop(e, toIdx) {
+            e.preventDefault();
+            document.querySelectorAll('.card-editor-item').forEach(el => {
+                el.classList.remove('dragging', 'drag-over');
+            });
+
+            if (cardDragIdx === null || cardDragIdx === toIdx) return;
+
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+
+            // Move the question
+            const [moved] = set.questions.splice(cardDragIdx, 1);
+            set.questions.splice(toIdx, 0, moved);
+
+            cardDragIdx = null;
+            saveState();
+            renderSavedSetViewer();
+        }
+
+        function editCardField(idx, field, value) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set || !set.questions[idx]) return;
+            set.questions[idx][field] = value;
+            saveState();
+        }
+
+        function editCardAnswers(idx, value) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set || !set.questions[idx]) return;
+            const answers = value.split(',').map(s => s.trim()).filter(s => s);
+            set.questions[idx].correctAnswer = answers.length > 0 ? answers : null;
+            saveState();
+        }
+
+        function editCardOption(idx, optIdx, value) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set || !set.questions[idx]) return;
+            if (set.questions[idx].options && set.questions[idx].options[optIdx]) {
+                set.questions[idx].options[optIdx].text = value;
+                saveState();
+            }
+        }
+
+        function removeCardOption(idx, optIdx) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set || !set.questions[idx] || !set.questions[idx].options) return;
+            set.questions[idx].options.splice(optIdx, 1);
+            saveState();
+            renderSavedSetViewer();
+        }
+
+        function addCardOption(idx) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set || !set.questions[idx]) return;
+            if (!set.questions[idx].options) set.questions[idx].options = [];
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const nextLetter = letters[set.questions[idx].options.length] || 'X';
+            set.questions[idx].options.push({ letter: nextLetter, text: '' });
+            saveState();
+            renderSavedSetViewer();
+        }
+
+        function deleteCard(idx) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+            const q = set.questions[idx];
+            if (!confirm(`Delete question #${idx + 1}?`)) return;
+            // Remove progress for this question
+            if (q && set.progress[q.id]) delete set.progress[q.id];
+            set.questions.splice(idx, 1);
+            saveState();
+            renderSavedSetViewer();
+            showNotification('Card deleted');
+        }
+
+        function addNewCard(type) {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+            const id = 'q_manual_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            const newQ = {
+                id,
+                number: set.questions.length + 1,
+                type,
+                question: '',
+                correctAnswer: type === 'short_answer' ? [] : null
+            };
+            if (type === 'mc') {
+                newQ.options = [
+                    { letter: 'A', text: '' },
+                    { letter: 'B', text: '' },
+                    { letter: 'C', text: '' },
+                    { letter: 'D', text: '' }
+                ];
+            }
+            set.questions.push(newQ);
+            saveState();
+            renderSavedSetViewer();
+            // Scroll to new card
+            setTimeout(() => {
+                const el = document.getElementById(`cardEditor_${set.questions.length - 1}`);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+            showNotification('New card added');
+        }
+
+        // ============================================
+        // STUDY OPTIONS: TYPE FILTER & EXCLUDE MASTERED
+        // ============================================
+
+        function setTypeFilter(type) {
+            sessionState.typeFilter = type;
+            document.getElementById('typeFilterAll').classList.toggle('active', type === 'all');
+            document.getElementById('typeFilterMc').classList.toggle('active', type === 'mc');
+            document.getElementById('typeFilterSa').classList.toggle('active', type === 'sa');
+            // Restart learn mode with new filter
+            delete learnSessionCache[appState.activeSetId];
+            startStudySession();
+        }
+
+        function toggleExcludeMastered() {
+            sessionState.excludeMastered = !sessionState.excludeMastered;
+            const btn = document.getElementById('excludeMasteredBtn');
+            if (btn) btn.classList.toggle('active', sessionState.excludeMastered);
+            delete learnSessionCache[appState.activeSetId];
+            startStudySession();
+        }
+
+        function resetMasteredToLearning() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+            let count = 0;
+            Object.values(set.progress).forEach(p => {
+                if (p.mastery === 'mastered') {
+                    p.mastery = 'learning';
+                    p.correct = Math.max(0, (p.correct || 0) - 1);
+                    count++;
+                }
+            });
+            saveState();
+            delete learnSessionCache[appState.activeSetId];
+            startStudySession();
+            showNotification(`Reset ${count} mastered question(s) to learning`);
+        }
+
+        function resetAllToLearning() {
+            const set = appState.questionSets[appState.activeSetId];
+            if (!set) return;
+            Object.keys(set.progress).forEach(qId => {
+                set.progress[qId] = {
+                    correct: 0, wrong: 0, hints: 0,
+                    lastSeen: null,
+                    starred: set.progress[qId]?.starred || false,
+                    mastery: 'new'
+                };
+            });
+            saveState();
+            delete learnSessionCache[appState.activeSetId];
+            startStudySession();
+            showNotification('All progress reset for this set');
+        }
+
+        // ============================================
+        // GENERATE FROM NOTES
+        // ============================================
+
+        async function generateFromNotes() {
+            const text = document.getElementById('notesInput').value.trim();
+            if (!text) {
+                showNotification('No notes to generate from');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Generating...';
+            }
+
+            try {
+                const res = await fetch('/api/generate-questions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                const data = await res.json();
+
+                if (data.questions && data.questions.length > 0) {
+                    parsedQuestions = data.questions;
+                    saveParsedQuestions();
+                    showPreview(data.questions);
+                    showNotification(`Generated ${data.questions.length} questions from your notes`);
+                } else if (data.error) {
+                    showNotification('Error: ' + data.error);
+                } else {
+                    showNotification('Could not generate questions from this content');
+                }
+            } catch (err) {
+                showNotification('Failed to generate questions: ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Generate Questions';
+                }
+            }
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+
+        function handleKeyboardShortcut(e) {
+            // Don't handle if user is typing in an input/textarea
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab || activeTab.id !== 'studyTab') return;
+
+            const mode = sessionState.currentMode;
+
+            if (mode === 'learn') {
+                const answer = sessionState.learnAnswers[sessionState.currentIndex];
+                const isSubmitted = answer && answer.submitted;
+
+                if (e.key === 'ArrowLeft') { e.preventDefault(); prevQuestion(); }
+                else if (e.key === 'ArrowRight') { e.preventDefault(); nextQuestion(); }
+                else if (e.key === 'Enter' && !isSubmitted) { e.preventDefault(); submitLearnAnswer(); }
+                else if (e.key === 'h' || e.key === 'H') { e.preventDefault(); useHint(); }
+                else if (!isSubmitted) {
+                    // Number keys 1-4 or A-D for MC
+                    const set = appState.questionSets[appState.activeSetId];
+                    const qIdx = sessionState.questionOrder[sessionState.currentIndex];
+                    const q = set?.questions[qIdx];
+                    if (q && !isShortAnswer(q)) {
+                        const keyMap = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D' };
+                        if (keyMap[e.key]) {
+                            e.preventDefault();
+                            selectLearnOption(keyMap[e.key]);
+                        }
+                    }
+                }
+            } else if (mode === 'flashcards') {
+                if (e.key === 'ArrowLeft') { e.preventDefault(); prevFlashcard(); }
+                else if (e.key === 'ArrowRight') { e.preventDefault(); nextFlashcard(); }
+                else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleFlashcardAnswer(); }
+            } else if (mode === 'test') {
+                // Scroll between questions with arrow keys
+                if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const questions = document.querySelectorAll('.d2l-question');
+                    for (let i = 0; i < questions.length; i++) {
+                        const rect = questions[i].getBoundingClientRect();
+                        if (rect.top > 10) {
+                            questions[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            break;
+                        }
+                    }
+                }
+                if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    const questions = document.querySelectorAll('.d2l-question');
+                    for (let i = questions.length - 1; i >= 0; i--) {
+                        const rect = questions[i].getBoundingClientRect();
+                        if (rect.bottom < window.innerHeight - 10) {
+                            questions[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // STICKY OFFSET COMPUTATION
+        // ============================================
+
+        function updateStickyOffsets() {
+            const header = document.querySelector('.header');
+            const tabNav = document.querySelector('.tab-navigation');
+            const headerH = header ? header.offsetHeight : 58;
+            const tabNavH = tabNav ? tabNav.offsetHeight : 50;
+            document.documentElement.style.setProperty('--header-height', headerH + 'px');
+            document.documentElement.style.setProperty('--nav-offset', (headerH + tabNavH) + 'px');
         }
 
         // ============================================
@@ -3794,7 +4677,14 @@
             // Show sync UI if enabled
             updateSyncUI();
 
-            // Handle OAuth hash redirect
+            // Compute sticky offsets
+            updateStickyOffsets();
+            window.addEventListener('resize', updateStickyOffsets);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyboardShortcut);
+
+            // Handle hash redirect
             const hash = window.location.hash.replace('#', '').replace('Tab', '');
             if (hash) {
                 const tabMap = { 'import': 'import', 'study': 'study', 'progress': 'progress', 'docs': 'docs' };
