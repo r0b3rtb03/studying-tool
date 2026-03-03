@@ -233,6 +233,23 @@ app.post('/api/sync', (req, res) => {
 });
 
 // ============================================
+// DOCS - serve markdown files
+// ============================================
+
+app.get('/api/docs/:file', (req, res) => {
+    const allowed = { 'readme': 'README.md', 'changelog': 'CHANGELOG.md' };
+    const file = allowed[req.params.file];
+    if (!file) return res.status(404).json({ error: 'Not found' });
+
+    const filePath = path.join(__dirname, file);
+    if (fs.existsSync(filePath)) {
+        res.type('text/plain').send(fs.readFileSync(filePath, 'utf8'));
+    } else {
+        res.status(404).json({ error: 'File not found' });
+    }
+});
+
+// ============================================
 // STATIC FILES & START
 // ============================================
 
