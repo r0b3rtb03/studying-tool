@@ -2349,20 +2349,22 @@
                     </div>
                 </div>
 
-                <div class="summary-stats" style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin-bottom: 3rem;">
+                <div class="summary-stats" style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin-bottom: 1.5rem;">
                     <div class="stat-card" style="min-width: 160px; box-shadow: 0 4px 12px var(--panel-shadow);">
                         <div class="stat-value" style="color: var(--correct-border); font-size: 2.5rem;">${roundCorrect}</div>
                         <div class="summary-stat-label">Correct</div>
                     </div>
-                    
-                    <button class="btn-primary" onclick="continueStudying()" style="font-size: 1.1rem; padding: 0.8rem 2rem; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                        Continue Studying
-                    </button>
 
                     <div class="stat-card" style="min-width: 160px; box-shadow: 0 4px 12px var(--panel-shadow);">
                         <div class="stat-value" style="color: var(--incorrect-border); font-size: 2.5rem;">${roundWrong}</div>
                         <div class="summary-stat-label">Incorrect</div>
                     </div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <button class="btn-primary" onclick="continueStudying()" style="font-size: 1.1rem; padding: 0.8rem 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        Continue Studying
+                    </button>
                 </div>
 
             `;
@@ -2875,14 +2877,21 @@
             set.questions.forEach((q, i) => {
                 const p = set.progress[q.id] || { correct: 0, wrong: 0, starred: false, mastery: 'new' };
 
+                let optionsHtml = '';
+                (q.options || []).forEach(opt => {
+                    optionsHtml += `<span>${opt.letter}. ${escapeHtml(opt.text)}</span>`;
+                });
+
                 html += `<tr>
-                    <td style="text-align: center; font-weight: 600;">${q.number || (i + 1)}</td>
-                    <td style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        ${escapeHtml(q.question.substring(0, 80))}${q.question.length > 80 ? '...' : ''}</td>
-                    <td style="text-align: center; color: var(--correct-border); font-weight: 600;">${p.correct || 0}</td>
-                    <td style="text-align: center; color: var(--incorrect-border); font-weight: 600;">${p.wrong || 0}</td>
-                    <td style="text-align: center;"><span class="mastery-badge mastery-${p.mastery}">${p.mastery}</span></td>
-                    <td style="text-align: center;">${p.starred ? '\u2605' : '-'}</td>
+                    <td style="text-align: center; font-weight: 600; vertical-align: top; padding-top: 1rem;">${q.number || (i + 1)}</td>
+                    <td>
+                        <div class="flashcard-q-text" style="margin-bottom: 0.25rem;">${escapeHtml(q.question)}</div>
+                        <div class="flashcard-options-list">${optionsHtml}</div>
+                    </td>
+                    <td style="text-align: center; color: var(--correct-border); font-weight: 600; vertical-align: top; padding-top: 1rem;">${p.correct || 0}</td>
+                    <td style="text-align: center; color: var(--incorrect-border); font-weight: 600; vertical-align: top; padding-top: 1rem;">${p.wrong || 0}</td>
+                    <td style="text-align: center; vertical-align: top; padding-top: 1rem;"><span class="mastery-badge mastery-${p.mastery}">${p.mastery}</span></td>
+                    <td style="text-align: center; vertical-align: top; padding-top: 1rem;">${p.starred ? '\u2605' : '-'}</td>
                 </tr>`;
             });
 
